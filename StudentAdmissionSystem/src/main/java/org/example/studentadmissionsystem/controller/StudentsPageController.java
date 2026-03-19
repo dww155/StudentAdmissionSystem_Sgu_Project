@@ -9,7 +9,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class StudentsPageController implements Initializable {
@@ -64,6 +66,18 @@ public class StudentsPageController implements Initializable {
         applyFilter(searchField.getText());
     }
 
+    @FXML
+    private void onAddNew() {
+        CreateRowPopup.show(
+                        "Thêm thí sinh mới",
+                        List.of("Mã TS", "Họ và tên", "CCCD", "Ngày sinh", "Email", "SĐT")
+                )
+                .ifPresent(data -> {
+                    master.add(mapToRow(data));
+                    applyFilter(searchField.getText());
+                });
+    }
+
     private void applyFilter(String query) {
         String q = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
         filtered.setAll(master.filtered(r ->
@@ -81,6 +95,17 @@ public class StudentsPageController implements Initializable {
                 new StudentRow("SBD002", "Trần Thị B", "01234567890123456780", "2006-03-30", "b@example.com", "0902345678"),
                 new StudentRow("SBD003", "Lê Văn C", "01234567890123456781", "2005-11-05", "c@example.com", "0903456789"),
                 new StudentRow("SBD004", "Phạm Thị D", "01234567890123456782", "2006-07-21", "d@example.com", "0904567890")
+        );
+    }
+
+    private StudentRow mapToRow(Map<String, String> data) {
+        return new StudentRow(
+                data.get("Mã TS"),
+                data.get("Họ và tên"),
+                data.get("CCCD"),
+                data.get("Ngày sinh"),
+                data.get("Email"),
+                data.get("SĐT")
         );
     }
 }

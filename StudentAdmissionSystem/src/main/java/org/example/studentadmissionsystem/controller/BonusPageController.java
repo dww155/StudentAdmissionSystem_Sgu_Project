@@ -8,6 +8,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class BonusPageController implements Initializable {
@@ -47,6 +49,21 @@ public class BonusPageController implements Initializable {
                 new BonusRow("TS001", "Nguyễn Văn A", "1.5", "Giải khuyến khích"),
                 new BonusRow("TS002", "Trần Thị B", "2.0", "Chứng chỉ ngoại ngữ"),
                 new BonusRow("TS003", "Lê Văn C", "0.5", "Thành tích thể thao")
+        );
+    }
+
+    @FXML
+    private void onAddNew() {
+        CreateRowPopup.show("Thêm điểm cộng", List.of("Mã TS", "Họ tên", "Điểm cộng", "Lý do"))
+                .ifPresent(data -> items.add(mapToRow(data)));
+    }
+
+    private BonusRow mapToRow(Map<String, String> data) {
+        return new BonusRow(
+                data.get("Mã TS"),
+                data.get("Họ tên"),
+                data.get("Điểm cộng"),
+                data.get("Lý do")
         );
     }
 }

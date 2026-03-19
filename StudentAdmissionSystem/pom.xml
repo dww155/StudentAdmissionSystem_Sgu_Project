@@ -164,7 +164,7 @@
                 <configuration>
 
                     <mainClass>
-                        org.example.studentadmissionsystem/org.example.studentadmissionsystem.HelloApplication
+                        org.example.studentadmissionsystem/org.example.studentadmissionsystem.Application
                     </mainClass>
 
                 </configuration>

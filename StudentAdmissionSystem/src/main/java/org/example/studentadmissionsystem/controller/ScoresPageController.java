@@ -8,6 +8,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class ScoresPageController implements Initializable {
@@ -59,6 +61,27 @@ public class ScoresPageController implements Initializable {
                 new ScoreRow("TS001", "Nguyễn Văn A", "THPT", "8.0", "7.0", "7.5", "22.5"),
                 new ScoreRow("TS002", "Trần Thị B", "VSAT", "9.0", "8.5", "8.0", "25.5"),
                 new ScoreRow("TS003", "Lê Văn C", "DGNL", "8.5", "8.0", "7.0", "23.5")
+        );
+    }
+
+    @FXML
+    private void onAddNew() {
+        CreateRowPopup.show(
+                        "Thêm điểm thí sinh",
+                        List.of("Mã TS", "Họ tên", "Loại điểm", "Môn 1", "Môn 2", "Môn 3", "Tổng")
+                )
+                .ifPresent(data -> items.add(mapToRow(data)));
+    }
+
+    private ScoreRow mapToRow(Map<String, String> data) {
+        return new ScoreRow(
+                data.get("Mã TS"),
+                data.get("Họ tên"),
+                data.get("Loại điểm"),
+                data.get("Môn 1"),
+                data.get("Môn 2"),
+                data.get("Môn 3"),
+                data.get("Tổng")
         );
     }
 }

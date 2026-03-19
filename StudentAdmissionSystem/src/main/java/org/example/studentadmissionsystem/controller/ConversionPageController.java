@@ -8,6 +8,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class ConversionPageController implements Initializable {
@@ -47,6 +49,21 @@ public class ConversionPageController implements Initializable {
                 new ConversionRow("THPT", "7.0", "8.4", "1.2"),
                 new ConversionRow("VSAT", "8.0", "9.6", "1.2"),
                 new ConversionRow("DGNL", "7.5", "8.5", "1.1")
+        );
+    }
+
+    @FXML
+    private void onAddNew() {
+        CreateRowPopup.show("Thêm quy đổi điểm", List.of("Loại điểm", "Điểm gốc", "Điểm quy đổi", "Hệ số"))
+                .ifPresent(data -> items.add(mapToRow(data)));
+    }
+
+    private ConversionRow mapToRow(Map<String, String> data) {
+        return new ConversionRow(
+                data.get("Loại điểm"),
+                data.get("Điểm gốc"),
+                data.get("Điểm quy đổi"),
+                data.get("Hệ số")
         );
     }
 }

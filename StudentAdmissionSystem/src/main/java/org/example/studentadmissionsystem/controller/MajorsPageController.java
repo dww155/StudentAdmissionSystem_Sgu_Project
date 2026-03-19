@@ -8,6 +8,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class MajorsPageController implements Initializable {
@@ -43,6 +45,20 @@ public class MajorsPageController implements Initializable {
                 new MajorRow("N1", "Công nghệ thông tin", "100"),
                 new MajorRow("N2", "Kinh tế", "80"),
                 new MajorRow("N3", "Kế toán", "60")
+        );
+    }
+
+    @FXML
+    private void onAddNew() {
+        CreateRowPopup.show("Thêm ngành mới", List.of("Mã ngành", "Tên ngành", "Chỉ tiêu"))
+                .ifPresent(data -> items.add(mapToRow(data)));
+    }
+
+    private MajorRow mapToRow(Map<String, String> data) {
+        return new MajorRow(
+                data.get("Mã ngành"),
+                data.get("Tên ngành"),
+                data.get("Chỉ tiêu")
         );
     }
 }

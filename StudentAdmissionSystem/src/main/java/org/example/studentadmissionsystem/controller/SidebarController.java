@@ -1,6 +1,7 @@
 package org.example.studentadmissionsystem.controller;
 
 import javafx.fxml.FXML;
+import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
@@ -23,6 +24,11 @@ public class SidebarController {
         if (!(e.getSource() instanceof Button btn)) return;
         PageId page = PageId.fromId(String.valueOf(btn.getUserData()));
         onNavigate.accept(page);
+    }
+
+    @FXML
+    private void onChangePassword(ActionEvent e) {
+        onNavigate.accept(PageId.ADMIN_CHANGE_PASSWORD);
     }
 
     public void setActive(PageId page) {
