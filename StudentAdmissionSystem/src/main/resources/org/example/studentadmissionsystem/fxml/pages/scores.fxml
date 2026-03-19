@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.studentadmissionsystem.controller.ScoresPageController"
+      styleClass="page" spacing="14.0">
+    <VBox styleClass="card" spacing="12.0">
+        <HBox styleClass="toolbar" spacing="10.0">
+            <Label text="Quản lý điểm thí sinh" styleClass="card-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Import" styleClass="btn-success"/>
+            <Button text="Thêm mới" styleClass="btn-primary"/>
+        </HBox>
+        <TableView fx:id="table" styleClass="table">
+            <columns>
+                <TableColumn fx:id="colMaTs" text="Mã TS"/>
+                <TableColumn fx:id="colHoTen" text="Họ tên"/>
+                <TableColumn fx:id="colLoaiDiem" text="Loại điểm"/>
+                <TableColumn fx:id="colMon1" text="Môn 1"/>
+                <TableColumn fx:id="colMon2" text="Môn 2"/>
+                <TableColumn fx:id="colMon3" text="Môn 3"/>
+                <TableColumn fx:id="colTongDiem" text="Tổng"/>
+            </columns>
+        </TableView>
+    </VBox>
+</VBox>
+
