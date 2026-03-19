@@ -49,7 +49,7 @@
                 <Label text="Quản trị viên" styleClass="sidebar-user-role"/>
             </VBox>
         </HBox>
-        <Button text="Đổi mật khẩu" styleClass="sidebar-footer-btn"/>
+        <Button text="Đổi mật khẩu" onAction="#onChangePassword" styleClass="sidebar-footer-btn"/>
     </VBox>
 </VBox>
 

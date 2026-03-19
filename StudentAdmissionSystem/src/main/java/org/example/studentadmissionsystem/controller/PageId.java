@@ -9,7 +9,8 @@ public enum PageId {
     SCORES("scores", "Điểm thí sinh", "Quản lý điểm THPT, VSAT, ĐGNL", "pages/scores.fxml"),
     BONUS("bonus", "Điểm cộng", "Quản lý điểm ưu tiên, khuyến khích", "pages/bonus.fxml"),
     WISHES("wishes", "Nguyện vọng", "Quản lý đăng ký và xét tuyển", "pages/wishes.fxml"),
-    CONVERSION("conversion", "Bảng quy đổi", "Quản lý quy đổi điểm giữa các loại", "pages/conversion.fxml");
+    CONVERSION("conversion", "Bảng quy đổi", "Quản lý quy đổi điểm giữa các loại", "pages/conversion.fxml"),
+    ADMIN_CHANGE_PASSWORD("admin-change-password", "Đổi mật khẩu", "Đổi mật khẩu cho quản trị viên", "pages/admin-change-password.fxml");
 
     private final String id;
     private final String title;

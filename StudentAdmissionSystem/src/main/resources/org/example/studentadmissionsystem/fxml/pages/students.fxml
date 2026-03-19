@@ -17,7 +17,7 @@
             <Button text="Tìm kiếm" onAction="#onSearch" styleClass="btn-primary"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Import" styleClass="btn-success"/>
-            <Button text="Thêm mới" styleClass="btn-primary"/>
+            <Button text="Thêm mới" onAction="#onAddNew" styleClass="btn-primary"/>
         </HBox>
 
         <TableView fx:id="table" styleClass="table">
