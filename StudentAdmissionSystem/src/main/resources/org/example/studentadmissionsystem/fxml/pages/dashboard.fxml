@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" styleClass="page" spacing="16.0">
+    <HBox spacing="14.0">
+        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
+            <Label text="Tổng thí sinh" styleClass="stat-label"/>
+            <Label text="0" styleClass="stat-value"/>
+            <Label text="+12% so với tuần trước" styleClass="stat-note-positive"/>
+        </VBox>
+        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
+            <Label text="Ngành tuyển sinh" styleClass="stat-label"/>
+            <Label text="0" styleClass="stat-value"/>
+            <Label text="Đang hoạt động" styleClass="stat-note"/>
+        </VBox>
+        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
+            <Label text="Nguyện vọng" styleClass="stat-label"/>
+            <Label text="0" styleClass="stat-value"/>
+            <Label text="Đang xử lý" styleClass="stat-note"/>
+        </VBox>
+        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
+            <Label text="Đã trúng tuyển" styleClass="stat-label"/>
+            <Label text="0" styleClass="stat-value"/>
+            <Label text="Xác nhận nhập học" styleClass="stat-note"/>
+        </VBox>
+    </HBox>
+
+    <HBox spacing="16.0">
+        <VBox styleClass="card" spacing="10.0" HBox.hgrow="ALWAYS">
+            <Label text="Thống kê điểm theo loại" styleClass="card-title"/>
+            <Label text="(Demo) Sẽ hiển thị biểu đồ ở đây" styleClass="muted"/>
+        </VBox>
+        <VBox styleClass="card" spacing="10.0" HBox.hgrow="ALWAYS">
+            <Label text="Ngành có nhiều nguyện vọng nhất" styleClass="card-title"/>
+            <Label text="Chưa có dữ liệu" styleClass="muted"/>
+        </VBox>
+    </HBox>
+
+    <VBox styleClass="card" spacing="10.0">
+        <Label text="Hoạt động gần đây" styleClass="card-title"/>
+        <Label text="Hệ thống sẵn sàng hoạt động" styleClass="muted"/>
+    </VBox>
+</VBox>
+
