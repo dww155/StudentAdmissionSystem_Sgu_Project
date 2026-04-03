@@ -49,7 +49,7 @@ logging:
               BasicBinder: TRACE
 
 jwt:
-  secret: dW5rbm93bmludmVudGVkZ2F2ZWRyaW5rcm9hcmRpc2Vhc2Vnb2ludm9sdmVkYWx0aG8=
+  secret: ${JWT_SECRET}
   expiration: 3600
   refreshExpiration: 604800
 

@@ -12,11 +12,16 @@ import org.mapstruct.MappingTarget;
 public interface MajorSubjectGroupMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "major", ignore = true)
+    @Mapping(target = "subjectCombination", ignore = true)
     MajorSubjectGroup toMajorSubjectGroup(MajorSubjectGroupCreationRequest request);
 
+    @Mapping(target = "majorCode", source = "major.majorCode")
+    @Mapping(target = "subjectCombinationCode", source = "subjectCombination.code")
     MajorSubjectGroupResponse toMajorSubjectGroupResponse(MajorSubjectGroup majorSubjectGroup);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "majorCode", ignore = true)
+    @Mapping(target = "major", ignore = true)
+    @Mapping(target = "subjectCombination", ignore = true)
     void updateMajorSubjectGroup(@MappingTarget MajorSubjectGroup majorSubjectGroup, MajorSubjectGroupUpdateRequest request);
 }

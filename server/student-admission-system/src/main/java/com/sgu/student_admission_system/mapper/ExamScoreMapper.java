@@ -12,14 +12,15 @@ import org.mapstruct.MappingTarget;
 public interface ExamScoreMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "cccd", source = "request.cccd")
+    @Mapping(target = "applicant", ignore = true)
     ExamScore toExamScore(ExamScoreCreationRequest request);
 
     @Mapping(target = "conversionCode", ignore = true)
     @Mapping(target = "standardizedScore", ignore = true)
+    @Mapping(target = "cccd", source = "applicant.cccd")
     ExamScoreResponse toExamScoreResponse(ExamScore examScore);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "cccd", ignore = true)
+    @Mapping(target = "applicant", ignore = true)
     void updateExamScore(@MappingTarget ExamScore examScore, ExamScoreUpdateRequest request);
 }

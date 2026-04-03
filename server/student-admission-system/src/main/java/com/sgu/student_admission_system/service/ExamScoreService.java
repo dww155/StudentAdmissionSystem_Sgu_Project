@@ -3,6 +3,7 @@ package com.sgu.student_admission_system.service;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreCreationRequest;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreResponse;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreUpdateRequest;
+import com.sgu.student_admission_system.entity.Applicant;
 import com.sgu.student_admission_system.entity.ConversionRule;
 import com.sgu.student_admission_system.entity.ExamScore;
 import com.sgu.student_admission_system.exception.AppException;
@@ -35,10 +36,11 @@ public class ExamScoreService {
 
     @Transactional
     public ExamScoreResponse createExamScore(ExamScoreCreationRequest request) {
-        validateApplicantExists(request.getCccd());
+        Applicant applicant = getApplicantByCccd(request.getCccd());
         ConversionRule conversionRule = getConversionRule(request.getConversionCode());
 
         ExamScore examScore = examScoreMapper.toExamScore(request);
+        examScore.setApplicant(applicant);
         BigDecimal standardizedScore = applyConversionRule(examScore, conversionRule);
 
         ExamScoreResponse response = examScoreMapper.toExamScoreResponse(
@@ -97,8 +99,8 @@ public class ExamScoreService {
         examScoreRepository.delete(examScore);
     }
 
-    private void validateApplicantExists(String cccd) {
-        applicantRepository.findByCccd(cccd)
+    private Applicant getApplicantByCccd(String cccd) {
+        return applicantRepository.findByCccd(cccd)
                 .orElseThrow(() -> new AppException(ErrorCode.APPLICANT_NOT_FOUND));
     }
 

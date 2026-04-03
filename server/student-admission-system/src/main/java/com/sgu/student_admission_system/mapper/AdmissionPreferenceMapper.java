@@ -12,10 +12,16 @@ import org.mapstruct.MappingTarget;
 public interface AdmissionPreferenceMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "applicant", ignore = true)
+    @Mapping(target = "major", ignore = true)
     AdmissionPreference toAdmissionPreference(AdmissionPreferenceCreationRequest request);
 
+    @Mapping(target = "cccd", source = "applicant.cccd")
+    @Mapping(target = "majorCode", source = "major.majorCode")
     AdmissionPreferenceResponse toAdmissionPreferenceResponse(AdmissionPreference admissionPreference);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "applicant", ignore = true)
+    @Mapping(target = "major", ignore = true)
     void updateAdmissionPreference(@MappingTarget AdmissionPreference admissionPreference, AdmissionPreferenceUpdateRequest request);
 }
