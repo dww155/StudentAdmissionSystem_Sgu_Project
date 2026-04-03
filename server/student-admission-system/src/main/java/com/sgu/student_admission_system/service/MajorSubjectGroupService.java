@@ -3,7 +3,9 @@ package com.sgu.student_admission_system.service;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupCreationRequest;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupResponse;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupUpdateRequest;
+import com.sgu.student_admission_system.entity.Major;
 import com.sgu.student_admission_system.entity.MajorSubjectGroup;
+import com.sgu.student_admission_system.entity.SubjectCombination;
 import com.sgu.student_admission_system.exception.AppException;
 import com.sgu.student_admission_system.exception.ErrorCode;
 import com.sgu.student_admission_system.mapper.MajorSubjectGroupMapper;
@@ -32,12 +34,14 @@ public class MajorSubjectGroupService {
 
     @Transactional
     public MajorSubjectGroupResponse createMajorSubjectGroup(MajorSubjectGroupCreationRequest request) {
-        validateMajorExists(request.getMajorCode());
-        validateSubjectCombinationExists(request.getSubjectCombinationCode());
+        Major major = getMajorByCode(request.getMajorCode());
+        SubjectCombination subjectCombination = getSubjectCombinationByCode(request.getSubjectCombinationCode());
 
         validateDuplicateMajorSubjectGroup(request.getMajorCode(), request.getSubjectCombinationCode(), null);
 
         MajorSubjectGroup majorSubjectGroup = majorSubjectGroupMapper.toMajorSubjectGroup(request);
+        majorSubjectGroup.setMajor(major);
+        majorSubjectGroup.setSubjectCombination(subjectCombination);
 
         return majorSubjectGroupMapper.toMajorSubjectGroupResponse(
                 majorSubjectGroupRepository.save(majorSubjectGroup)
@@ -63,11 +67,12 @@ public class MajorSubjectGroupService {
         MajorSubjectGroup majorSubjectGroup = majorSubjectGroupRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.MAJOR_SUBJECT_GROUP_NOT_FOUND));
 
-        validateSubjectCombinationExists(request.getSubjectCombinationCode());
+        SubjectCombination subjectCombination = getSubjectCombinationByCode(request.getSubjectCombinationCode());
 
-        validateDuplicateMajorSubjectGroup(majorSubjectGroup.getMajorCode(), request.getSubjectCombinationCode(), id);
+        validateDuplicateMajorSubjectGroup(majorSubjectGroup.getMajor().getMajorCode(), request.getSubjectCombinationCode(), id);
 
         majorSubjectGroupMapper.updateMajorSubjectGroup(majorSubjectGroup, request);
+        majorSubjectGroup.setSubjectCombination(subjectCombination);
 
         return majorSubjectGroupMapper.toMajorSubjectGroupResponse(
                 majorSubjectGroupRepository.save(majorSubjectGroup)
@@ -82,23 +87,23 @@ public class MajorSubjectGroupService {
         majorSubjectGroupRepository.delete(majorSubjectGroup);
     }
 
-    private void validateMajorExists(String majorCode) {
-        majorRepository.findByMajorCode(majorCode)
-                .orElseThrow(() -> new AppException(ErrorCode.MAJOR_NOT_FOUND));
-    }
-
-    private void validateSubjectCombinationExists(String subjectCombinationCode) {
-        subjectCombinationRepository.findByCode(subjectCombinationCode)
-                .orElseThrow(() -> new AppException(ErrorCode.SUBJECT_COMBINATION_NOT_FOUND));
-    }
-
     private void validateDuplicateMajorSubjectGroup(String majorCode, String subjectCombinationCode, Integer id) {
         boolean duplicated = id == null
-                ? majorSubjectGroupRepository.existsByMajorCodeAndSubjectCombinationCode(majorCode, subjectCombinationCode)
-                : majorSubjectGroupRepository.existsByMajorCodeAndSubjectCombinationCodeAndIdNot(majorCode, subjectCombinationCode, id);
+                ? majorSubjectGroupRepository.existsByMajor_MajorCodeAndSubjectCombination_Code(majorCode, subjectCombinationCode)
+                : majorSubjectGroupRepository.existsByMajor_MajorCodeAndSubjectCombination_CodeAndIdNot(majorCode, subjectCombinationCode, id);
 
         if (duplicated) {
             throw new AppException(ErrorCode.MAJOR_SUBJECT_GROUP_ALREADY_EXISTS);
         }
+    }
+
+    private Major getMajorByCode(String majorCode) {
+        return majorRepository.findByMajorCode(majorCode)
+                .orElseThrow(() -> new AppException(ErrorCode.MAJOR_NOT_FOUND));
+    }
+
+    private SubjectCombination getSubjectCombinationByCode(String code) {
+        return subjectCombinationRepository.findByCode(code)
+                .orElseThrow(() -> new AppException(ErrorCode.SUBJECT_COMBINATION_NOT_FOUND));
     }
 }

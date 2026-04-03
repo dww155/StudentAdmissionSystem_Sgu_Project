@@ -21,11 +21,13 @@ public class MajorSubjectGroup {
     @Column(name = "id")
     Integer id;
 
-    @Column(name = "manganh", nullable = false, length = 45)
-    String majorCode;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "manganh", referencedColumnName = "manganh", nullable = false)
+    Major major;
 
-    @Column(name = "matohop", nullable = false, length = 45)
-    String subjectCombinationCode;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "matohop", referencedColumnName = "matohop", nullable = false)
+    SubjectCombination subjectCombination;
 
     @Column(name = "th_mon1", length = 10)
     String mon1;
@@ -84,6 +86,4 @@ public class MajorSubjectGroup {
     @Column(name = "dolech", precision = 6, scale = 2)
     BigDecimal deviation;
 }
-
-
 

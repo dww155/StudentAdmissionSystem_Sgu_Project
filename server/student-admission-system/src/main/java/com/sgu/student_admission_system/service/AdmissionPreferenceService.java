@@ -4,6 +4,8 @@ import com.sgu.student_admission_system.dto.AdmissionPreference.AdmissionPrefere
 import com.sgu.student_admission_system.dto.AdmissionPreference.AdmissionPreferenceResponse;
 import com.sgu.student_admission_system.dto.AdmissionPreference.AdmissionPreferenceUpdateRequest;
 import com.sgu.student_admission_system.entity.AdmissionPreference;
+import com.sgu.student_admission_system.entity.Applicant;
+import com.sgu.student_admission_system.entity.Major;
 import com.sgu.student_admission_system.exception.AppException;
 import com.sgu.student_admission_system.exception.ErrorCode;
 import com.sgu.student_admission_system.mapper.AdmissionPreferenceMapper;
@@ -32,12 +34,14 @@ public class AdmissionPreferenceService {
 
     @Transactional
     public AdmissionPreferenceResponse createAdmissionPreference(AdmissionPreferenceCreationRequest request) {
-        validateApplicantExists(request.getCccd());
-        validateMajorExists(request.getMajorCode());
+        Applicant applicant = getApplicantByCccd(request.getCccd());
+        Major major = getMajorByCode(request.getMajorCode());
 
         validateDuplicatePriority(request.getCccd(), request.getPriorityOrder(), null);
 
         AdmissionPreference admissionPreference = admissionPreferenceMapper.toAdmissionPreference(request);
+        admissionPreference.setApplicant(applicant);
+        admissionPreference.setMajor(major);
 
         return admissionPreferenceMapper.toAdmissionPreferenceResponse(
                 admissionPreferenceRepository.save(admissionPreference)
@@ -63,11 +67,12 @@ public class AdmissionPreferenceService {
         AdmissionPreference admissionPreference = admissionPreferenceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ADMISSION_PREFERENCE_NOT_FOUND));
 
-        validateMajorExists(request.getMajorCode());
+        Major major = getMajorByCode(request.getMajorCode());
 
-        validateDuplicatePriority(admissionPreference.getCccd(), request.getPriorityOrder(), id);
+        validateDuplicatePriority(admissionPreference.getApplicant().getCccd(), request.getPriorityOrder(), id);
 
         admissionPreferenceMapper.updateAdmissionPreference(admissionPreference, request);
+        admissionPreference.setMajor(major);
 
         return admissionPreferenceMapper.toAdmissionPreferenceResponse(
                 admissionPreferenceRepository.save(admissionPreference)
@@ -82,20 +87,20 @@ public class AdmissionPreferenceService {
         admissionPreferenceRepository.delete(admissionPreference);
     }
 
-    private void validateApplicantExists(String cccd) {
-        applicantRepository.findByCccd(cccd)
+    private Applicant getApplicantByCccd(String cccd) {
+        return applicantRepository.findByCccd(cccd)
                 .orElseThrow(() -> new AppException(ErrorCode.APPLICANT_NOT_FOUND));
     }
 
-    private void validateMajorExists(String majorCode) {
-        majorRepository.findByMajorCode(majorCode)
+    private Major getMajorByCode(String majorCode) {
+        return majorRepository.findByMajorCode(majorCode)
                 .orElseThrow(() -> new AppException(ErrorCode.MAJOR_NOT_FOUND));
     }
 
     private void validateDuplicatePriority(String cccd, Integer priorityOrder, Integer preferenceId) {
         boolean duplicated = preferenceId == null
-                ? admissionPreferenceRepository.existsByCccdAndPriorityOrder(cccd, priorityOrder)
-                : admissionPreferenceRepository.existsByCccdAndPriorityOrderAndIdNot(cccd, priorityOrder, preferenceId);
+                ? admissionPreferenceRepository.existsByApplicant_CccdAndPriorityOrder(cccd, priorityOrder)
+                : admissionPreferenceRepository.existsByApplicant_CccdAndPriorityOrderAndIdNot(cccd, priorityOrder, preferenceId);
 
         if (duplicated) {
             throw new AppException(ErrorCode.DUPLICATE_ADMISSION_PREFERENCE_PRIORITY);

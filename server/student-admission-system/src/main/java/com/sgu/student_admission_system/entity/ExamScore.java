@@ -21,8 +21,9 @@ public class ExamScore {
     @Column(name = "iddiemthi")
     Integer id;
 
-    @Column(name = "cccd", nullable = false, unique = true, length = 20)
-    String cccd;
+    @OneToOne(optional = false)
+    @JoinColumn(name = "cccd", referencedColumnName = "cccd", nullable = false, unique = true)
+    Applicant applicant;
 
     @Column(name = "sobaodanh", length = 45)
     String registrationNumber;

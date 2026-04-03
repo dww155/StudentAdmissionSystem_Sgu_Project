@@ -21,14 +21,17 @@ public class AdmissionBonusScore {
     @Column(name = "iddiemcong")
     Integer id;
 
-    @Column(name = "ts_cccd", nullable = false, length = 45)
-    String cccd;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ts_cccd", referencedColumnName = "cccd", nullable = false)
+    Applicant applicant;
 
-    @Column(name = "manganh", length = 20)
-    String majorCode;
+    @ManyToOne
+    @JoinColumn(name = "manganh", referencedColumnName = "manganh")
+    Major major;
 
-    @Column(name = "matohop", length = 10)
-    String subjectCombinationCode;
+    @ManyToOne
+    @JoinColumn(name = "matohop", referencedColumnName = "matohop")
+    SubjectCombination subjectCombination;
 
     @Column(name = "phuongthuc", length = 45)
     String method;

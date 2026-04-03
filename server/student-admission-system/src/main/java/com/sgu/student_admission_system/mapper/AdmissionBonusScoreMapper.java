@@ -12,11 +12,19 @@ import org.mapstruct.MappingTarget;
 public interface AdmissionBonusScoreMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "applicant", ignore = true)
+    @Mapping(target = "major", ignore = true)
+    @Mapping(target = "subjectCombination", ignore = true)
     AdmissionBonusScore toAdmissionBonusScore(AdmissionBonusScoreCreationRequest request);
 
+    @Mapping(target = "cccd", source = "applicant.cccd")
+    @Mapping(target = "majorCode", source = "major.majorCode")
+    @Mapping(target = "subjectCombinationCode", source = "subjectCombination.code")
     AdmissionBonusScoreResponse toAdmissionBonusScoreResponse(AdmissionBonusScore admissionBonusScore);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "cccd", ignore = true)
+    @Mapping(target = "applicant", ignore = true)
+    @Mapping(target = "major", ignore = true)
+    @Mapping(target = "subjectCombination", ignore = true)
     void updateAdmissionBonusScore(@MappingTarget AdmissionBonusScore admissionBonusScore, AdmissionBonusScoreUpdateRequest request);
 }

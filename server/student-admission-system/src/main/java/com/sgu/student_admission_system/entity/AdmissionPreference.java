@@ -21,11 +21,13 @@ public class AdmissionPreference {
     @Column(name = "idnv")
     Integer id;
 
-    @Column(name = "nn_cccd", nullable = false, length = 45)
-    String cccd;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "nn_cccd", referencedColumnName = "cccd", nullable = false)
+    Applicant applicant;
 
-    @Column(name = "nv_manganh", nullable = false, length = 45)
-    String majorCode;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "nv_manganh", referencedColumnName = "manganh", nullable = false)
+    Major major;
 
     @Column(name = "nv_tt", nullable = false)
     Integer priorityOrder;
