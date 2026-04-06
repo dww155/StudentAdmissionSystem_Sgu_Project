@@ -21,7 +21,7 @@ public class Major {
     @Column(name = "idnganh")
     Integer id;
 
-    @Column(name = "manganh", nullable = false, length = 45)
+    @Column(name = "manganh", nullable = false, length = 45, unique = true)
     String majorCode;
 
     @Column(name = "tennganh", nullable = false, length = 100)

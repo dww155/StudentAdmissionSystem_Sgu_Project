@@ -86,4 +86,3 @@ public class MajorSubjectGroup {
     @Column(name = "dolech", precision = 6, scale = 2)
     BigDecimal deviation;
 }
-

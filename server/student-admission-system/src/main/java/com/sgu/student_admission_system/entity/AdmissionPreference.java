@@ -26,7 +26,7 @@ public class AdmissionPreference {
     Applicant applicant;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "nv_manganh", referencedColumnName = "manganh", nullable = false)
+    @JoinColumn(name = "manganh", referencedColumnName = "manganh", nullable = false)
     Major major;
 
     @Column(name = "nv_tt", nullable = false)
@@ -56,6 +56,5 @@ public class AdmissionPreference {
     @Column(name = "tt_thm", length = 45)
     String subjectGroup;
 }
-
 
 
