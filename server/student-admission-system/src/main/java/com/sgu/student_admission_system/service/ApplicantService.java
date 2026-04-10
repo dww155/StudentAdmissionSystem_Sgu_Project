@@ -51,6 +51,7 @@ public class ApplicantService {
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
         User user = User.builder()
+                .username(request.getCccd())
                 .password(passwordEncoder.encode(PasswordUtil.generatePassword()))
                 .roles(Set.of(userRole))
                 .build();
@@ -76,6 +77,7 @@ public class ApplicantService {
                 .map(
                         applicantCreationRequest -> {
                             User user = User.builder()
+                                    .username(applicantCreationRequest.getCccd())
                                     .password(passwordEncoder.encode(PasswordUtil.generatePassword()))
                                     .roles(Set.of(userRole))
                                     .build();

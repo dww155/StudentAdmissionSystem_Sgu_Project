@@ -1,9 +1,9 @@
 package com.sgu.student_admission_system.service;
 
-import com.sgu.student_admission_system.dto.authentication.IntrospectRequest;
-import com.sgu.student_admission_system.dto.authentication.IntrospectResponse;
-import com.sgu.student_admission_system.dto.authentication.LoginRequest;
-import com.sgu.student_admission_system.dto.authentication.LoginResponse;
+import com.sgu.student_admission_system.dto.Authentication.IntrospectRequest;
+import com.sgu.student_admission_system.dto.Authentication.IntrospectResponse;
+import com.sgu.student_admission_system.dto.Authentication.LoginRequest;
+import com.sgu.student_admission_system.dto.Authentication.LoginResponse;
 import com.sgu.student_admission_system.entity.User;
 import com.sgu.student_admission_system.exception.AppException;
 import com.sgu.student_admission_system.exception.ErrorCode;

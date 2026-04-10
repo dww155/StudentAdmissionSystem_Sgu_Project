@@ -1,6 +1,7 @@
 package com.sgu.student_admission_system.service;
 
 import com.sgu.student_admission_system.dto.SubjectCombination.SubjectCombinationCreationRequest;
+import com.sgu.student_admission_system.dto.SubjectCombination.ListSubjectCombinationCreationRequest;
 import com.sgu.student_admission_system.dto.SubjectCombination.SubjectCombinationResponse;
 import com.sgu.student_admission_system.dto.SubjectCombination.SubjectCombinationUpdateRequest;
 import com.sgu.student_admission_system.entity.SubjectCombination;
@@ -33,6 +34,24 @@ public class SubjectCombinationService {
         return subjectCombinationMapper.toSubjectCombinationResponse(
                 subjectCombinationRepository.save(subjectCombination)
         );
+    }
+
+    @Transactional
+    public List<SubjectCombinationResponse> createSubjectCombinations(ListSubjectCombinationCreationRequest request) {
+        List<SubjectCombinationCreationRequest> subjectCombinationCreationRequests =
+                request.getSubjectCombinationCreationRequestList();
+
+        List<SubjectCombination> subjectCombinations = subjectCombinationCreationRequests
+                .stream()
+                .map(subjectCombinationMapper::toSubjectCombination)
+                .toList();
+
+        List<SubjectCombination> savedSubjectCombinations = subjectCombinationRepository.saveAll(subjectCombinations);
+
+        return savedSubjectCombinations
+                .stream()
+                .map(subjectCombinationMapper::toSubjectCombinationResponse)
+                .toList();
     }
 
     public SubjectCombinationResponse getSubjectCombination(Integer id) {

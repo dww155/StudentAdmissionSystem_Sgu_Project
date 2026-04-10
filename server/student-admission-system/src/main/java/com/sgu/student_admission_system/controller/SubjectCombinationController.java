@@ -1,6 +1,7 @@
 package com.sgu.student_admission_system.controller;
 
 import com.sgu.student_admission_system.dto.ApiResponse;
+import com.sgu.student_admission_system.dto.SubjectCombination.ListSubjectCombinationCreationRequest;
 import com.sgu.student_admission_system.dto.SubjectCombination.SubjectCombinationCreationRequest;
 import com.sgu.student_admission_system.dto.SubjectCombination.SubjectCombinationResponse;
 import com.sgu.student_admission_system.dto.SubjectCombination.SubjectCombinationUpdateRequest;
@@ -27,6 +28,14 @@ public class SubjectCombinationController {
     ) {
         SubjectCombinationResponse response = subjectCombinationService.createSubjectCombination(request);
         return new ApiResponse<>(response, "Subject combination created successfully");
+    }
+
+    @PostMapping("/bulk")
+    public ApiResponse<List<SubjectCombinationResponse>> createSubjectCombinations(
+            @RequestBody @Valid ListSubjectCombinationCreationRequest request
+    ) {
+        List<SubjectCombinationResponse> response = subjectCombinationService.createSubjectCombinations(request);
+        return new ApiResponse<>(response, "Subject combinations created successfully");
     }
 
     @GetMapping("/{id}")

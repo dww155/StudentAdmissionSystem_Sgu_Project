@@ -4,14 +4,14 @@ import com.sgu.student_admission_system.validation.ValidGender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApplicantUpdateRequest {
@@ -28,6 +28,7 @@ public class ApplicantUpdateRequest {
     @NotBlank(message = "INVALID_PHONE_NUMBER")
     String phoneNumber;
 
+    @NotBlank(message = "INVALID_EMAIL")
     @Email(message = "INVALID_EMAIL")
     String email;
 

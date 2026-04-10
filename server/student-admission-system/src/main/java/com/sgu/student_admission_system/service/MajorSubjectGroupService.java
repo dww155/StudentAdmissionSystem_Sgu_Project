@@ -1,6 +1,7 @@
 package com.sgu.student_admission_system.service;
 
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupCreationRequest;
+import com.sgu.student_admission_system.dto.MajorSubjectGroup.ListMajorSubjectGroupCreationRequest;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupResponse;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupUpdateRequest;
 import com.sgu.student_admission_system.entity.Major;
@@ -46,6 +47,41 @@ public class MajorSubjectGroupService {
         return majorSubjectGroupMapper.toMajorSubjectGroupResponse(
                 majorSubjectGroupRepository.save(majorSubjectGroup)
         );
+    }
+
+    @Transactional
+    public List<MajorSubjectGroupResponse> createMajorSubjectGroups(ListMajorSubjectGroupCreationRequest request) {
+        List<MajorSubjectGroupCreationRequest> majorSubjectGroupCreationRequests =
+                request.getMajorSubjectGroupCreationRequestList();
+
+        List<MajorSubjectGroup> majorSubjectGroups = majorSubjectGroupCreationRequests
+                .stream()
+                .map(majorSubjectGroupCreationRequest -> {
+                    Major major = getMajorByCode(majorSubjectGroupCreationRequest.getMajorCode());
+                    SubjectCombination subjectCombination =
+                            getSubjectCombinationByCode(majorSubjectGroupCreationRequest.getSubjectCombinationCode());
+
+                    validateDuplicateMajorSubjectGroup(
+                            majorSubjectGroupCreationRequest.getMajorCode(),
+                            majorSubjectGroupCreationRequest.getSubjectCombinationCode(),
+                            null
+                    );
+
+                    MajorSubjectGroup majorSubjectGroup =
+                            majorSubjectGroupMapper.toMajorSubjectGroup(majorSubjectGroupCreationRequest);
+                    majorSubjectGroup.setMajor(major);
+                    majorSubjectGroup.setSubjectCombination(subjectCombination);
+
+                    return majorSubjectGroup;
+                })
+                .toList();
+
+        List<MajorSubjectGroup> savedMajorSubjectGroups = majorSubjectGroupRepository.saveAll(majorSubjectGroups);
+
+        return savedMajorSubjectGroups
+                .stream()
+                .map(majorSubjectGroupMapper::toMajorSubjectGroupResponse)
+                .toList();
     }
 
     public MajorSubjectGroupResponse getMajorSubjectGroup(Integer id) {

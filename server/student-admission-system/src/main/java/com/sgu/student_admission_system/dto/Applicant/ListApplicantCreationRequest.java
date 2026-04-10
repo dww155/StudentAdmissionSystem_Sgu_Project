@@ -1,17 +1,19 @@
 package com.sgu.student_admission_system.dto.Applicant;
 
 import jakarta.validation.Valid;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ListApplicantCreationRequest {
+    @NotEmpty(message = "INVALID_APPLICANT_LIST")
     @Valid
     List<ApplicantCreationRequest> applicantCreationRequestList;
 }

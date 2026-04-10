@@ -1,6 +1,7 @@
 package com.sgu.student_admission_system.service;
 
 import com.sgu.student_admission_system.dto.ConversionRule.ConversionRuleCreationRequest;
+import com.sgu.student_admission_system.dto.ConversionRule.ListConversionRuleCreationRequest;
 import com.sgu.student_admission_system.dto.ConversionRule.ConversionRuleResponse;
 import com.sgu.student_admission_system.dto.ConversionRule.ConversionRuleUpdateRequest;
 import com.sgu.student_admission_system.entity.ConversionRule;
@@ -33,6 +34,23 @@ public class ConversionRuleService {
         return conversionRuleMapper.toConversionRuleResponse(
                 conversionRuleRepository.save(conversionRule)
         );
+    }
+
+    @Transactional
+    public List<ConversionRuleResponse> createConversionRules(ListConversionRuleCreationRequest request) {
+        List<ConversionRuleCreationRequest> conversionRuleCreationRequests = request.getConversionRuleCreationRequestList();
+
+        List<ConversionRule> conversionRules = conversionRuleCreationRequests
+                .stream()
+                .map(conversionRuleMapper::toConversionRule)
+                .toList();
+
+        List<ConversionRule> savedConversionRules = conversionRuleRepository.saveAll(conversionRules);
+
+        return savedConversionRules
+                .stream()
+                .map(conversionRuleMapper::toConversionRuleResponse)
+                .toList();
     }
 
     public ConversionRuleResponse getConversionRule(Integer id) {

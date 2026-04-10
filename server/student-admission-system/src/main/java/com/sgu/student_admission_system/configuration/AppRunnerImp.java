@@ -1,8 +1,10 @@
 package com.sgu.student_admission_system.configuration;
 
 import com.sgu.student_admission_system.constant.RoleConstant;
+import com.sgu.student_admission_system.entity.Applicant;
 import com.sgu.student_admission_system.entity.Role;
 import com.sgu.student_admission_system.entity.User;
+import com.sgu.student_admission_system.repository.ApplicantRepository;
 import com.sgu.student_admission_system.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -24,6 +27,7 @@ import java.util.Set;
 @Slf4j
 public class AppRunnerImp implements ApplicationRunner {
     UserRepository userRepository;
+    ApplicantRepository applicantRepository;
     PasswordEncoder passwordEncoder;
 
     @Override

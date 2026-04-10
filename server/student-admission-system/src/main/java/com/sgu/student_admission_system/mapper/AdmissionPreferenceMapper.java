@@ -11,7 +11,6 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface AdmissionPreferenceMapper {
 
-    @Mapping(target = "id", ignore = true)
     @Mapping(target = "applicant", ignore = true)
     @Mapping(target = "major", ignore = true)
     AdmissionPreference toAdmissionPreference(AdmissionPreferenceCreationRequest request);
@@ -20,7 +19,6 @@ public interface AdmissionPreferenceMapper {
     @Mapping(target = "majorCode", source = "major.majorCode")
     AdmissionPreferenceResponse toAdmissionPreferenceResponse(AdmissionPreference admissionPreference);
 
-    @Mapping(target = "id", ignore = true)
     @Mapping(target = "applicant", ignore = true)
     @Mapping(target = "major", ignore = true)
     void updateAdmissionPreference(@MappingTarget AdmissionPreference admissionPreference, AdmissionPreferenceUpdateRequest request);
