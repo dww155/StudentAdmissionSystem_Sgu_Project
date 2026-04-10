@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.sgu.admission_desktop.controller.MajorSubjectsPageController"
+      styleClass="page" spacing="14.0">
+    <VBox styleClass="card" spacing="12.0">
+        <HBox styleClass="toolbar" spacing="10.0">
+            <Label text="Liên kết Ngành - Tổ hợp môn" styleClass="card-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Thêm liên kết" styleClass="btn-primary"/>
+        </HBox>
+        <TableView fx:id="table" styleClass="table">
+            <columns>
+                <TableColumn fx:id="colMaNganh" text="Mã ngành"/>
+                <TableColumn fx:id="colTenNganh" text="Tên ngành"/>
+                <TableColumn fx:id="colMaToHop" text="Mã tổ hợp"/>
+                <TableColumn fx:id="colTenToHop" text="Tên tổ hợp"/>
+            </columns>
+        </TableView>
+    </VBox>
+</VBox>
+

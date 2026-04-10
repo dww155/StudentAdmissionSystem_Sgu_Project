@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.sgu.admission_desktop.controller.MainLayoutController">
+    <left>
+        <fx:include source="../components/sidebar.fxml" fx:id="sidebar" />
+    </left>
+
+    <top>
+        <fx:include source="../components/header.fxml" fx:id="header" />
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="content-scroll">
+            <content>
+                <StackPane fx:id="pageHost" styleClass="content" />
+            </content>
+            <padding>
+                <Insets top="18.0" right="18.0" bottom="18.0" left="18.0"/>
+            </padding>
+        </ScrollPane>
+    </center>
+</BorderPane>
+

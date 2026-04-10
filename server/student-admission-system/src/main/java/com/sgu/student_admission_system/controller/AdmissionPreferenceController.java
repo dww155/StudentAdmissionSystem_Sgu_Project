@@ -1,6 +1,7 @@
 package com.sgu.student_admission_system.controller;
 
 import com.sgu.student_admission_system.dto.AdmissionPreference.AdmissionPreferenceCreationRequest;
+import com.sgu.student_admission_system.dto.AdmissionPreference.ListAdmissionPreferenceCreationRequest;
 import com.sgu.student_admission_system.dto.AdmissionPreference.AdmissionPreferenceResponse;
 import com.sgu.student_admission_system.dto.AdmissionPreference.AdmissionPreferenceUpdateRequest;
 import com.sgu.student_admission_system.dto.ApiResponse;
@@ -27,6 +28,14 @@ public class AdmissionPreferenceController {
     ) {
         AdmissionPreferenceResponse response = admissionPreferenceService.createAdmissionPreference(request);
         return new ApiResponse<>(response, "Admission preference created successfully");
+    }
+
+    @PostMapping("/bulk")
+    public ApiResponse<List<AdmissionPreferenceResponse>> createAdmissionPreferences(
+            @RequestBody @Valid ListAdmissionPreferenceCreationRequest request
+    ) {
+        List<AdmissionPreferenceResponse> response = admissionPreferenceService.createAdmissionPreferences(request);
+        return new ApiResponse<>(response, "Admission preferences created successfully");
     }
 
     @GetMapping("/{id}")

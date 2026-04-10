@@ -1,6 +1,7 @@
 package com.sgu.student_admission_system.controller;
 
 import com.sgu.student_admission_system.dto.ApiResponse;
+import com.sgu.student_admission_system.dto.Major.ListMajorCreationRequest;
 import com.sgu.student_admission_system.dto.Major.MajorCreationRequest;
 import com.sgu.student_admission_system.dto.Major.MajorResponse;
 import com.sgu.student_admission_system.dto.Major.MajorUpdateRequest;
@@ -25,6 +26,12 @@ public class MajorController {
     public ApiResponse<MajorResponse> createMajor(@RequestBody @Valid MajorCreationRequest request) {
         MajorResponse response = majorService.createMajor(request);
         return new ApiResponse<>(response, "Major created successfully");
+    }
+
+    @PostMapping("/bulk")
+    public ApiResponse<List<MajorResponse>> createMajors(@RequestBody @Valid ListMajorCreationRequest request) {
+        List<MajorResponse> response = majorService.createMajors(request);
+        return new ApiResponse<>(response, "Majors created successfully");
     }
 
     @GetMapping("/{id}")

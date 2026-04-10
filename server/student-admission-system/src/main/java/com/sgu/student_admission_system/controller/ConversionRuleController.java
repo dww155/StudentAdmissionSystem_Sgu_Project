@@ -2,6 +2,7 @@ package com.sgu.student_admission_system.controller;
 
 import com.sgu.student_admission_system.dto.ApiResponse;
 import com.sgu.student_admission_system.dto.ConversionRule.ConversionRuleCreationRequest;
+import com.sgu.student_admission_system.dto.ConversionRule.ListConversionRuleCreationRequest;
 import com.sgu.student_admission_system.dto.ConversionRule.ConversionRuleResponse;
 import com.sgu.student_admission_system.dto.ConversionRule.ConversionRuleUpdateRequest;
 import com.sgu.student_admission_system.service.ConversionRuleService;
@@ -27,6 +28,14 @@ public class ConversionRuleController {
     ) {
         ConversionRuleResponse response = conversionRuleService.createConversionRule(request);
         return new ApiResponse<>(response, "Conversion rule created successfully");
+    }
+
+    @PostMapping("/bulk")
+    public ApiResponse<List<ConversionRuleResponse>> createConversionRules(
+            @RequestBody @Valid ListConversionRuleCreationRequest request
+    ) {
+        List<ConversionRuleResponse> response = conversionRuleService.createConversionRules(request);
+        return new ApiResponse<>(response, "Conversion rules created successfully");
     }
 
     @GetMapping("/{id}")

@@ -12,11 +12,17 @@ import org.mapstruct.MappingTarget;
 public interface MajorMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "baseCombination", ignore = true)
     Major toMajor(MajorCreationRequest request);
 
+    @Mapping(
+            target = "baseCombination",
+            expression = "java(major.getBaseCombination() != null ? major.getBaseCombination().getCode() : null)"
+    )
     MajorResponse toMajorResponse(Major major);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "majorCode", ignore = true)
+    @Mapping(target = "baseCombination", ignore = true)
     void updateMajor(@MappingTarget Major major, MajorUpdateRequest request);
 }

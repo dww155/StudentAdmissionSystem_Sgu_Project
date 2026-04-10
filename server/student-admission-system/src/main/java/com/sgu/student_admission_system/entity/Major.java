@@ -27,8 +27,9 @@ public class Major {
     @Column(name = "tennganh", nullable = false, length = 100)
     String majorName;
 
-    @Column(name = "n_tohopgoc", length = 3)
-    String baseCombination;
+    @ManyToOne
+    @JoinColumn(name = "n_tohopgoc", referencedColumnName = "matohop")
+    SubjectCombination baseCombination;
 
     @Column(name = "n_chitieu", nullable = false)
     Integer quota;
@@ -63,6 +64,3 @@ public class Major {
     @Column(name = "sl_thpt", length = 45)
     String highSchoolExamCount;
 }
-
-
-

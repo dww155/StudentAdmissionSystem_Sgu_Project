@@ -2,6 +2,7 @@ package com.sgu.student_admission_system.controller;
 
 import com.sgu.student_admission_system.dto.ApiResponse;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreCreationRequest;
+import com.sgu.student_admission_system.dto.ExamScore.ListExamScoreCreationRequest;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreResponse;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreUpdateRequest;
 import com.sgu.student_admission_system.service.ExamScoreService;
@@ -25,6 +26,14 @@ public class ExamScoreController {
     public ApiResponse<ExamScoreResponse> createExamScore(@RequestBody @Valid ExamScoreCreationRequest request) {
         ExamScoreResponse response = examScoreService.createExamScore(request);
         return new ApiResponse<>(response, "Exam score created successfully");
+    }
+
+    @PostMapping("/bulk")
+    public ApiResponse<List<ExamScoreResponse>> createExamScores(
+            @RequestBody @Valid ListExamScoreCreationRequest request
+    ) {
+        List<ExamScoreResponse> response = examScoreService.createExamScores(request);
+        return new ApiResponse<>(response, "Exam scores created successfully");
     }
 
     @GetMapping("/{id}")

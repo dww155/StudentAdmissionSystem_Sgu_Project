@@ -1,11 +1,12 @@
 package com.sgu.student_admission_system.controller;
 
 import com.sgu.student_admission_system.dto.ApiResponse;
-import com.sgu.student_admission_system.dto.authentication.IntrospectRequest;
-import com.sgu.student_admission_system.dto.authentication.IntrospectResponse;
-import com.sgu.student_admission_system.dto.authentication.LoginRequest;
-import com.sgu.student_admission_system.dto.authentication.LoginResponse;
+import com.sgu.student_admission_system.dto.Authentication.IntrospectRequest;
+import com.sgu.student_admission_system.dto.Authentication.IntrospectResponse;
+import com.sgu.student_admission_system.dto.Authentication.LoginRequest;
+import com.sgu.student_admission_system.dto.Authentication.LoginResponse;
 import com.sgu.student_admission_system.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -22,14 +23,14 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ApiResponse<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
         LoginResponse response = authenticationService.login(request);
 
         return new ApiResponse(response, "Login successfully");
     }
 
     @PostMapping("/introspect")
-    public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
+    public ApiResponse<IntrospectResponse> introspect(@RequestBody @Valid IntrospectRequest request) {
         IntrospectResponse response = authenticationService.introspect(request);
 
         return new ApiResponse(response, "Introspect successfully");

@@ -1,6 +1,7 @@
 package com.sgu.student_admission_system.controller;
 
 import com.sgu.student_admission_system.dto.ApiResponse;
+import com.sgu.student_admission_system.dto.MajorSubjectGroup.ListMajorSubjectGroupCreationRequest;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupCreationRequest;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupResponse;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupUpdateRequest;
@@ -27,6 +28,14 @@ public class MajorSubjectGroupController {
     ) {
         MajorSubjectGroupResponse response = majorSubjectGroupService.createMajorSubjectGroup(request);
         return new ApiResponse<>(response, "Major subject group created successfully");
+    }
+
+    @PostMapping("/bulk")
+    public ApiResponse<List<MajorSubjectGroupResponse>> createMajorSubjectGroups(
+            @RequestBody @Valid ListMajorSubjectGroupCreationRequest request
+    ) {
+        List<MajorSubjectGroupResponse> response = majorSubjectGroupService.createMajorSubjectGroups(request);
+        return new ApiResponse<>(response, "Major subject groups created successfully");
     }
 
     @GetMapping("/{id}")

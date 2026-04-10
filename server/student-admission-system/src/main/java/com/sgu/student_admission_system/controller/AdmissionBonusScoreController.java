@@ -3,6 +3,7 @@ package com.sgu.student_admission_system.controller;
 import com.sgu.student_admission_system.dto.AdmissionBonusScore.AdmissionBonusScoreCreationRequest;
 import com.sgu.student_admission_system.dto.AdmissionBonusScore.AdmissionBonusScoreResponse;
 import com.sgu.student_admission_system.dto.AdmissionBonusScore.AdmissionBonusScoreUpdateRequest;
+import com.sgu.student_admission_system.dto.AdmissionBonusScore.ListAdmissionBonusScoreCreationRequest;
 import com.sgu.student_admission_system.dto.ApiResponse;
 import com.sgu.student_admission_system.service.AdmissionBonusScoreService;
 import jakarta.validation.Valid;
@@ -27,6 +28,14 @@ public class AdmissionBonusScoreController {
     ) {
         AdmissionBonusScoreResponse response = admissionBonusScoreService.createAdmissionBonusScore(request);
         return new ApiResponse<>(response, "Admission bonus score created successfully");
+    }
+
+    @PostMapping("/bulk")
+    public ApiResponse<List<AdmissionBonusScoreResponse>> createAdmissionBonusScores(
+            @RequestBody @Valid ListAdmissionBonusScoreCreationRequest request
+    ) {
+        List<AdmissionBonusScoreResponse> response = admissionBonusScoreService.createAdmissionBonusScores(request);
+        return new ApiResponse<>(response, "Admission bonus scores created successfully");
     }
 
     @GetMapping("/{id}")

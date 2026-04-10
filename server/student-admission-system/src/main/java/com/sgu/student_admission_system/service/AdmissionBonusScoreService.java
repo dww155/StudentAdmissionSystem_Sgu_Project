@@ -3,6 +3,7 @@ package com.sgu.student_admission_system.service;
 import com.sgu.student_admission_system.dto.AdmissionBonusScore.AdmissionBonusScoreCreationRequest;
 import com.sgu.student_admission_system.dto.AdmissionBonusScore.AdmissionBonusScoreResponse;
 import com.sgu.student_admission_system.dto.AdmissionBonusScore.AdmissionBonusScoreUpdateRequest;
+import com.sgu.student_admission_system.dto.AdmissionBonusScore.ListAdmissionBonusScoreCreationRequest;
 import com.sgu.student_admission_system.entity.AdmissionBonusScore;
 import com.sgu.student_admission_system.entity.Applicant;
 import com.sgu.student_admission_system.entity.Major;
@@ -49,6 +50,38 @@ public class AdmissionBonusScoreService {
         return admissionBonusScoreMapper.toAdmissionBonusScoreResponse(
                 admissionBonusScoreRepository.save(admissionBonusScore)
         );
+    }
+
+    @Transactional
+    public List<AdmissionBonusScoreResponse> createAdmissionBonusScores(ListAdmissionBonusScoreCreationRequest request) {
+        List<AdmissionBonusScoreCreationRequest> admissionBonusScoreCreationRequests =
+                request.getAdmissionBonusScoreCreationRequestList();
+
+        List<AdmissionBonusScore> admissionBonusScores = admissionBonusScoreCreationRequests
+                .stream()
+                .map(admissionBonusScoreCreationRequest -> {
+                    Applicant applicant = getApplicantByCccd(admissionBonusScoreCreationRequest.getCccd());
+                    Major major = getMajorByCodeOrNull(admissionBonusScoreCreationRequest.getMajorCode());
+                    SubjectCombination subjectCombination = getSubjectCombinationByCodeOrNull(
+                            admissionBonusScoreCreationRequest.getSubjectCombinationCode()
+                    );
+
+                    AdmissionBonusScore admissionBonusScore =
+                            admissionBonusScoreMapper.toAdmissionBonusScore(admissionBonusScoreCreationRequest);
+                    admissionBonusScore.setApplicant(applicant);
+                    admissionBonusScore.setMajor(major);
+                    admissionBonusScore.setSubjectCombination(subjectCombination);
+
+                    return admissionBonusScore;
+                })
+                .toList();
+
+        List<AdmissionBonusScore> savedAdmissionBonusScores = admissionBonusScoreRepository.saveAll(admissionBonusScores);
+
+        return savedAdmissionBonusScores
+                .stream()
+                .map(admissionBonusScoreMapper::toAdmissionBonusScoreResponse)
+                .toList();
     }
 
     public AdmissionBonusScoreResponse getAdmissionBonusScore(Integer id) {

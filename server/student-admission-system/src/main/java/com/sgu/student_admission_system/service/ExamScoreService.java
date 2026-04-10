@@ -1,6 +1,7 @@
 package com.sgu.student_admission_system.service;
 
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreCreationRequest;
+import com.sgu.student_admission_system.dto.ExamScore.ListExamScoreCreationRequest;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreResponse;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreUpdateRequest;
 import com.sgu.student_admission_system.entity.Applicant;
@@ -41,14 +42,46 @@ public class ExamScoreService {
 
         ExamScore examScore = examScoreMapper.toExamScore(request);
         examScore.setApplicant(applicant);
+
+        // standardize score
         BigDecimal standardizedScore = applyConversionRule(examScore, conversionRule);
 
         ExamScoreResponse response = examScoreMapper.toExamScoreResponse(
                 examScoreRepository.save(examScore)
         );
+
         response.setConversionCode(conversionRule != null ? conversionRule.getConversionCode() : null);
         response.setStandardizedScore(standardizedScore);
         return response;
+    }
+
+    @Transactional
+    public List<ExamScoreResponse> createExamScores(ListExamScoreCreationRequest request) {
+        List<ExamScoreCreationRequest> examScoreCreationRequests = request.getExamScoreCreationRequestList();
+
+        List<ExamScore> examScores = examScoreCreationRequests
+                .stream()
+                .map(examScoreCreationRequest -> {
+                    Applicant applicant = getApplicantByCccd(examScoreCreationRequest.getCccd());
+
+                    ExamScore examScore = examScoreMapper.toExamScore(examScoreCreationRequest);
+                    examScore.setApplicant(applicant);
+
+                    return examScore;
+                })
+                .toList();
+
+        List<ExamScore> savedExamScores = examScoreRepository.saveAll(examScores);
+
+        return savedExamScores
+                .stream()
+                .map(examScore -> {
+                    ExamScoreResponse response = examScoreMapper.toExamScoreResponse(examScore);
+                    response.setStandardizedScore(null);
+                    response.setConversionCode(null);
+                    return response;
+                })
+                .toList();
     }
 
     public ExamScoreResponse getExamScore(Integer id) {

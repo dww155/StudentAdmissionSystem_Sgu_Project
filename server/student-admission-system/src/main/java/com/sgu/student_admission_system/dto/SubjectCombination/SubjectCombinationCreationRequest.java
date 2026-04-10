@@ -1,12 +1,12 @@
 package com.sgu.student_admission_system.dto.SubjectCombination;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SubjectCombinationCreationRequest {
@@ -23,5 +23,6 @@ public class SubjectCombinationCreationRequest {
     @NotBlank(message = "INVALID_SUBJECT")
     String mon3;
 
+    @NotBlank(message = "INVALID_SUBJECT_COMBINATION_NAME")
     String name;
 }
