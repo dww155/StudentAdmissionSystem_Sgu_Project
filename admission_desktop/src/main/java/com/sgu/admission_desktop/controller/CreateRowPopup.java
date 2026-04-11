@@ -1,6 +1,5 @@
 package com.sgu.admission_desktop.controller;
 
-import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
@@ -13,8 +12,10 @@ import javafx.scene.layout.GridPane;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class CreateRowPopup {
     private CreateRowPopup() {
@@ -23,10 +24,11 @@ public final class CreateRowPopup {
     public static Optional<Map<String, String>> show(String title, List<String> fields) {
         Dialog<Map<String, String>> dialog = new Dialog<>();
         dialog.setTitle(title);
-        dialog.setHeaderText("Nhập thông tin mới");
+        dialog.setHeaderText("Enter new data");
 
-        ButtonType createButtonType = new ButtonType("Tạo mới", ButtonBar.ButtonData.OK_DONE);
+        ButtonType createButtonType = new ButtonType("Add data", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+        dialog.getDialogPane().setPrefWidth(460);
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -38,7 +40,7 @@ public final class CreateRowPopup {
             String field = fields.get(i);
             Label label = new Label(field + ":");
             TextField textField = new TextField();
-            textField.setPromptText("Nhập " + field.toLowerCase());
+            textField.setPromptText("Enter " + field.toLowerCase(Locale.ROOT));
             grid.add(label, 0, i);
             grid.add(textField, 1, i);
             inputs.put(field, textField);
@@ -47,12 +49,20 @@ public final class CreateRowPopup {
 
         Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
         createButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-            boolean hasEmpty = inputs.values().stream().anyMatch(tf -> tf.getText().trim().isEmpty());
-            if (hasEmpty) {
+            List<String> missingRequiredFields = inputs.entrySet().stream()
+                    .filter(entry -> !isOptionalField(entry.getKey()))
+                    .filter(entry -> entry.getValue().getText().trim().isEmpty())
+                    .map(Map.Entry::getKey)
+                    .toList();
+
+            if (!missingRequiredFields.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Thiếu thông tin");
+                alert.setTitle("Missing required fields");
                 alert.setHeaderText(null);
-                alert.setContentText("Vui lòng nhập đầy đủ thông tin trước khi tạo mới.");
+                alert.setContentText(
+                        "Please fill required fields before adding data:\n"
+                                + missingRequiredFields.stream().collect(Collectors.joining(", "))
+                );
                 alert.showAndWait();
                 event.consume();
             }
@@ -70,5 +80,10 @@ public final class CreateRowPopup {
         });
 
         return dialog.showAndWait();
+    }
+
+    private static boolean isOptionalField(String fieldName) {
+        String normalized = fieldName.toLowerCase(Locale.ROOT);
+        return normalized.contains("optional") || normalized.contains("tuy chon");
     }
 }

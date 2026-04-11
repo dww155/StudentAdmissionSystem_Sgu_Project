@@ -18,15 +18,22 @@ module com.sgu.admission_desktop {
 
     requires static lombok;
     requires java.net.http;
+    requires jakarta.validation;
 
-    // ✅ QUAN TRỌNG NHẤT
     opens com.sgu.admission_desktop.controller to javafx.fxml;
-
-    // root package (an toàn)
     opens com.sgu.admission_desktop to javafx.fxml;
 
     exports com.sgu.admission_desktop;
 
-    opens com.sgu.admission_desktop.dto.Authentication to com.fasterxml.jackson.databind;
     opens com.sgu.admission_desktop.dto to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.Authentication to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.AdmissionBonusScore to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.AdmissionPreference to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.Applicant to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.ConversionRule to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.ExamScore to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.Major to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.MajorSubjectGroup to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.SubjectCombination to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.user to com.fasterxml.jackson.databind;
 }

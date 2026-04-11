@@ -1,233 +1,215 @@
 package com.sgu.admission_desktop.util;
 
-public class URLUtil {
+public final class URLUtil {
+
+    private URLUtil() {
+    }
 
     // ===================== BASE URL =====================
     public static final String BASE_URL = "http://localhost:8080/sas";
 
-    // ===================== HELPER =====================
     private static String build(String endpoint) {
         return BASE_URL + endpoint;
     }
 
     // ===================== AUTH =====================
-    public static class AUTH {
+    public static final class AUTH {
+        private AUTH() {
+        }
+
         public static final String LOGIN = build("/auth/login");
-        public static final String REGISTER = build("/auth/register");
-        public static final String LOGOUT = build("/auth/logout");
-        public static final String REFRESH = build("/auth/refresh");
         public static final String INTROSPECT = build("/auth/introspect");
     }
 
-    // ===================== USER =====================
-    public static class USER {
-        public static final String CREATE = build("/users");
-        public static final String GET_ALL = build("/users");
-        public static final String GET_INFO = build("/users/info");
-
-        public static String GET_BY_ID(String id) {
-            return build("/users/" + id);
+    // ===================== SUBJECT COMBINATIONS =====================
+    public static final class SUBJECT_COMBINATION {
+        private SUBJECT_COMBINATION() {
         }
 
-        public static String UPDATE(String id) {
-            return build("/users/" + id);
+        public static final String GET_ALL = build("/subject-combinations");
+        public static final String CREATE = build("/subject-combinations");
+        public static final String CREATE_BULK = build("/subject-combinations/bulk");
+
+        public static String GET_BY_ID(int id) {
+            return build("/subject-combinations/" + id);
         }
 
-        public static String UPDATE_PASSWORD(String id) {
-            return build("/users/" + id);
+        public static String UPDATE(int id) {
+            return build("/subject-combinations/" + id);
         }
 
-        public static String DELETE(String id) {
-            return build("/users/" + id);
-        }
-    }
-
-    // ===================== PRODUCT =====================
-    public static class PRODUCT {
-        public static final String CREATE = build("/products");
-        public static final String GET_ALL = build("/products");
-        public static final String PAGINATE = build("/products/paginate");
-
-        public static String GET_BY_ID(String id) {
-            return build("/products/" + id);
-        }
-
-        public static String UPDATE(String id) {
-            return build("/products/" + id);
-        }
-
-        public static String DELETE(String id) {
-            return build("/products/" + id);
+        public static String DELETE(int id) {
+            return build("/subject-combinations/" + id);
         }
     }
 
-    // ===================== STAFF =====================
-    public static class STAFF {
-        public static final String CREATE = build("/staffs");
-        public static final String GET_ALL = build("/staffs");
-        public static final String GET_INFO = build("/staffs/info");
-
-        public static String GET_BY_ID(String id) {
-            return build("/staffs/" + id);
+    // ===================== MAJORS =====================
+    public static final class MAJOR {
+        private MAJOR() {
         }
 
-        public static String UPDATE(String id) {
-            return build("/staffs/" + id);
+        public static final String GET_ALL = build("/majors");
+        public static final String CREATE = build("/majors");
+        public static final String CREATE_BULK = build("/majors/bulk");
+
+        public static String GET_BY_ID(int id) {
+            return build("/majors/" + id);
         }
 
-        public static String UPDATE_SHIFT(String id, int shift) {
-            return build("/staffs/" + id + "/shift?shift=" + shift);
+        public static String UPDATE(int id) {
+            return build("/majors/" + id);
         }
 
-        public static String DELETE(String id) {
-            return build("/staffs/" + id);
-        }
-    }
-
-    // ===================== CUSTOMER =====================
-    public static class CUSTOMER {
-        public static final String CREATE = build("/customers");
-        public static final String GET_ALL = build("/customers");
-        public static final String GET_INFO = build("/customers/info");
-
-        public static String GET_BY_ID(String id) {
-            return build("/customers/" + id);
-        }
-
-        public static String UPDATE(String id) {
-            return build("/customers/" + id);
-        }
-
-        public static String ADD_POINTS(String id) {
-            return build("/customers/" + id + "/points");
-        }
-
-        public static String ADD_CART_ITEM(String customerId) {
-            return build("/customers/" + customerId + "/items");
-        }
-
-        public static String DELETE(String id) {
-            return build("/customers/" + id);
+        public static String DELETE(int id) {
+            return build("/majors/" + id);
         }
     }
 
-    // ===================== INVOICE =====================
-    public static class INVOICE {
-        public static final String CREATE = build("/invoices");
-        public static final String REVIEW = build("/invoices/review");
-        public static final String GET_ALL = build("/invoices");
-
-        public static String GET_BY_ID(String id) {
-            return build("/invoices/" + id);
+    // ===================== MAJOR SUBJECT GROUPS =====================
+    public static final class MAJOR_SUBJECT_GROUP {
+        private MAJOR_SUBJECT_GROUP() {
         }
 
-        public static String GET_BY_CUSTOMER(String customerId) {
-            return build("/invoices/customer/" + customerId);
+        public static final String GET_ALL = build("/major-subject-groups");
+        public static final String CREATE = build("/major-subject-groups");
+        public static final String CREATE_BULK = build("/major-subject-groups/bulk");
+
+        public static String GET_BY_ID(int id) {
+            return build("/major-subject-groups/" + id);
         }
 
-        public static String GET_BY_STAFF(String staffId) {
-            return build("/invoices/staff/" + staffId);
+        public static String UPDATE(int id) {
+            return build("/major-subject-groups/" + id);
         }
 
-        public static String DELETE(String id) {
-            return build("/invoices/" + id);
-        }
-    }
-
-    // ===================== PET =====================
-    public static class PET {
-        public static final String CREATE = build("/pets");
-        public static final String GET_ALL = build("/pets");
-        public static final String PAGINATE = build("/pets/paginate");
-
-        public static String GET_BY_ID(String id) {
-            return build("/pets/" + id);
-        }
-
-        public static String UPDATE(String id) {
-            return build("/pets/" + id);
-        }
-
-        public static String MARK_SOLD(String id) {
-            return build("/pets/" + id + "/sold");
-        }
-
-        public static String DELETE(String id) {
-            return build("/pets/" + id);
+        public static String DELETE(int id) {
+            return build("/major-subject-groups/" + id);
         }
     }
 
-    // ===================== PURCHASE =====================
-    public static class PURCHASE {
-        public static final String CREATE = build("/purchases");
-        public static final String GET_ALL = build("/purchases");
-
-        public static String GET_BY_ID(String id) {
-            return build("/purchases/" + id);
+    // ===================== EXAM SCORES =====================
+    public static final class EXAM_SCORE {
+        private EXAM_SCORE() {
         }
 
-        public static String DELETE(String id) {
-            return build("/purchases/" + id);
-        }
-    }
+        public static final String GET_ALL = build("/exam-scores");
+        public static final String CREATE = build("/exam-scores");
+        public static final String CREATE_BULK = build("/exam-scores/bulk");
 
-    // ===================== PROMOTION =====================
-    public static class PROMOTION {
-        public static final String CREATE = build("/promotions");
-        public static final String GET_ALL = build("/promotions");
-
-        public static String GET_BY_ID(String id) {
-            return build("/promotions/" + id);
+        public static String GET_BY_ID(int id) {
+            return build("/exam-scores/" + id);
         }
 
-        public static String DELETE(String id) {
-            return build("/promotions/" + id);
+        public static String UPDATE(int id) {
+            return build("/exam-scores/" + id);
+        }
+
+        public static String DELETE(int id) {
+            return build("/exam-scores/" + id);
         }
     }
 
-    // ===================== SUPPLIER =====================
-    public static class SUPPLIER {
-        public static final String CREATE = build("/suppliers");
-        public static final String GET_ALL = build("/suppliers");
-
-        public static String GET_BY_ID(String id) {
-            return build("/suppliers/" + id);
+    // ===================== CONVERSION RULES =====================
+    public static final class CONVERSION_RULE {
+        private CONVERSION_RULE() {
         }
 
-        public static String UPDATE(String id) {
-            return build("/suppliers/" + id);
+        public static final String GET_ALL = build("/conversion-rules");
+        public static final String CREATE = build("/conversion-rules");
+        public static final String CREATE_BULK = build("/conversion-rules/bulk");
+
+        public static String GET_BY_ID(int id) {
+            return build("/conversion-rules/" + id);
         }
 
-        public static String DELETE(String id) {
-            return build("/suppliers/" + id);
-        }
-    }
-
-    // ===================== CATEGORY =====================
-    public static class CATEGORY {
-        public static final String CREATE = build("/categories");
-        public static final String GET_ALL = build("/categories");
-
-        public static String GET_BY_ID(String id) {
-            return build("/categories/" + id);
+        public static String UPDATE(int id) {
+            return build("/conversion-rules/" + id);
         }
 
-        public static String UPDATE(String id) {
-            return build("/categories/" + id);
-        }
-
-        public static String DELETE(String id) {
-            return build("/categories/" + id);
+        public static String DELETE(int id) {
+            return build("/conversion-rules/" + id);
         }
     }
 
-    // ===================== INVENTORY =====================
-    public static class INVENTORY {
-        public static final String GET = build("/inventories");
+    // ===================== APPLICANTS =====================
+    public static final class APPLICANT {
+        private APPLICANT() {
+        }
+
+        public static final String GET_ALL = build("/applicant");
+        public static final String CREATE = build("/applicant");
+        public static final String CREATE_BULK = build("/applicant/bulk");
+
+        public static String GET_BY_ID(int id) {
+            return build("/applicant/" + id);
+        }
+
+        public static String UPDATE(int id) {
+            return build("/applicant/" + id);
+        }
+
+        public static String DELETE(int id) {
+            return build("/applicant/" + id);
+        }
+    }
+
+    // ===================== ADMISSION PREFERENCES =====================
+    public static final class ADMISSION_PREFERENCE {
+        private ADMISSION_PREFERENCE() {
+        }
+
+        public static final String GET_ALL = build("/admission-preferences");
+        public static final String CREATE = build("/admission-preferences");
+        public static final String CREATE_BULK = build("/admission-preferences/bulk");
+
+        public static String GET_BY_ID(int id) {
+            return build("/admission-preferences/" + id);
+        }
+
+        public static String UPDATE(int id) {
+            return build("/admission-preferences/" + id);
+        }
+
+        public static String DELETE(int id) {
+            return build("/admission-preferences/" + id);
+        }
+    }
+
+    // ===================== ADMISSION BONUS SCORES =====================
+    public static final class ADMISSION_BONUS_SCORE {
+        private ADMISSION_BONUS_SCORE() {
+        }
+
+        public static final String GET_ALL = build("/admission-bonus-scores");
+        public static final String CREATE = build("/admission-bonus-scores");
+        public static final String CREATE_BULK = build("/admission-bonus-scores/bulk");
+
+        public static String GET_BY_ID(int id) {
+            return build("/admission-bonus-scores/" + id);
+        }
+
+        public static String UPDATE(int id) {
+            return build("/admission-bonus-scores/" + id);
+        }
+
+        public static String DELETE(int id) {
+            return build("/admission-bonus-scores/" + id);
+        }
+    }
+
+    // ===================== TEST =====================
+    public static final class TEST {
+        private TEST() {
+        }
+
+        public static final String HELLO = build("/hello");
     }
 
     // ===================== STORAGE KEYS =====================
-    public static class STORAGE_KEYS {
+    public static final class STORAGE_KEYS {
+        private STORAGE_KEYS() {
+        }
+
         public static final String AUTH_TOKEN = "authToken";
         public static final String USER_NAME = "userName";
     }

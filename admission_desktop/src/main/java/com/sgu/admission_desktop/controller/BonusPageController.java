@@ -1,5 +1,11 @@
 package com.sgu.admission_desktop.controller;
 
+import com.sgu.admission_desktop.dto.AdmissionBonusScore.AdmissionBonusScoreCreationRequest;
+import com.sgu.admission_desktop.dto.AdmissionBonusScore.AdmissionBonusScoreResponse;
+import com.sgu.admission_desktop.dto.ApiResponse;
+import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
+import com.sgu.admission_desktop.service.AdmissionBonusScoreService;
+import com.sgu.admission_desktop.service.ApplicantService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -8,9 +14,11 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class BonusPageController implements Initializable {
 
@@ -30,6 +38,10 @@ public class BonusPageController implements Initializable {
     private TableColumn<BonusRow, String> colLyDo;
 
     private final ObservableList<BonusRow> items = FXCollections.observableArrayList();
+    private final AdmissionBonusScoreService admissionBonusScoreService = new AdmissionBonusScoreService();
+    private final ApplicantService applicantService = new ApplicantService();
+
+    private Map<String, String> applicantNameByCccd = Map.of();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -41,30 +53,95 @@ public class BonusPageController implements Initializable {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(items);
 
-        seedDemoData();
+        loadBonusScores();
     }
 
-    private void seedDemoData() {
-        items.setAll(
-                new BonusRow("TS001", "Nguyễn Văn A", "1.5", "Giải khuyến khích"),
-                new BonusRow("TS002", "Trần Thị B", "2.0", "Chứng chỉ ngoại ngữ"),
-                new BonusRow("TS003", "Lê Văn C", "0.5", "Thành tích thể thao")
-        );
+    private void loadBonusScores() {
+        try {
+            applicantNameByCccd = loadApplicantNames();
+
+            ApiResponse<List<AdmissionBonusScoreResponse>> response = admissionBonusScoreService.getAll();
+            List<AdmissionBonusScoreResponse> bonusScores = response.getData() == null ? List.of() : response.getData();
+
+            items.setAll(bonusScores.stream()
+                    .map(this::toRow)
+                    .toList());
+        } catch (Exception e) {
+            items.clear();
+            ControllerSupport.showError("Load bonus scores failed", ControllerSupport.extractMessage(e));
+        }
     }
 
     @FXML
     private void onAddNew() {
-        CreateRowPopup.show("Thêm điểm cộng", List.of("Mã TS", "Họ tên", "Điểm cộng", "Lý do"))
-                .ifPresent(data -> items.add(mapToRow(data)));
+        CreateRowPopup.show(
+                        "Add bonus score",
+                        List.of(
+                                "CCCD",
+                                "Major code",
+                                "Subject combination code",
+                                "Method",
+                                "Bonus score",
+                                "Priority score",
+                                "Total score",
+                                "DC keys",
+                                "Note (optional)"
+                        )
+                )
+                .ifPresent(this::createBonusScore);
     }
 
-    private BonusRow mapToRow(Map<String, String> data) {
+    private void createBonusScore(Map<String, String> data) {
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("cccd", data.get("CCCD"));
+            payload.put("majorCode", data.get("Major code"));
+            payload.put("subjectCombinationCode", data.get("Subject combination code"));
+            payload.put("method", data.get("Method"));
+            payload.put("bonusScore", ControllerSupport.parseDecimal(data.get("Bonus score"), "Bonus score"));
+            payload.put("priorityScore", ControllerSupport.parseDecimal(data.get("Priority score"), "Priority score"));
+            payload.put("totalScore", ControllerSupport.parseDecimal(data.get("Total score"), "Total score"));
+            payload.put("dcKeys", data.get("DC keys"));
+            payload.put("note", blankToNull(data.get("Note (optional)")));
+
+            AdmissionBonusScoreCreationRequest request = ControllerSupport.convert(payload, AdmissionBonusScoreCreationRequest.class);
+            admissionBonusScoreService.create(request);
+            loadBonusScores();
+        } catch (IllegalArgumentException e) {
+            ControllerSupport.showError("Invalid bonus score", e.getMessage());
+        } catch (Exception e) {
+            ControllerSupport.showError("Create bonus score failed", ControllerSupport.extractMessage(e));
+        }
+    }
+
+    private Map<String, String> loadApplicantNames() {
+        ApiResponse<List<ApplicantResponse>> response = applicantService.getAll();
+        List<ApplicantResponse> applicants = response.getData() == null ? List.of() : response.getData();
+
+        return applicants.stream()
+                .map(ControllerSupport::toMap)
+                .collect(Collectors.toMap(
+                        item -> ControllerSupport.safeString(item.get("cccd")),
+                        item -> (ControllerSupport.safeString(item.get("lastName")) + " " + ControllerSupport.safeString(item.get("firstName"))).trim(),
+                        (left, right) -> left
+                ));
+    }
+
+    private BonusRow toRow(AdmissionBonusScoreResponse bonusScore) {
+        Map<String, Object> data = ControllerSupport.toMap(bonusScore);
+        String cccd = ControllerSupport.safeString(data.get("cccd"));
         return new BonusRow(
-                data.get("Mã TS"),
-                data.get("Họ tên"),
-                data.get("Điểm cộng"),
-                data.get("Lý do")
+                cccd,
+                applicantNameByCccd.getOrDefault(cccd, cccd),
+                ControllerSupport.safeString(data.get("bonusScore")),
+                ControllerSupport.safeString(data.get("note"))
         );
     }
-}
 
+    private String blankToNull(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
+    }
+}
