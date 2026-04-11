@@ -263,3 +263,17 @@
     -fx-alignment: CENTER_LEFT;
 }
 
+/* Login */
+.login-root {
+    -fx-background-color: linear-gradient(to bottom right, #dbeafe 0%, #f8fafc 55%, #e2e8f0 100%);
+    -fx-padding: 24;
+}
+
+.login-card {
+    -fx-min-height: 280;
+}
+
+.login-error {
+    -fx-text-fill: #b91c1c;
+    -fx-font-size: 12px;
+}

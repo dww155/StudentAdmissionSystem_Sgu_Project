@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -13,25 +12,22 @@
       styleClass="page" spacing="14.0">
     <VBox styleClass="card" spacing="12.0">
         <HBox spacing="10.0" styleClass="toolbar">
-            <TextField fx:id="searchField" promptText="Tìm theo CCCD, họ tên..." HBox.hgrow="ALWAYS"/>
-            <Button text="Tìm kiếm" onAction="#onSearch" styleClass="btn-primary"/>
+            <TextField fx:id="searchField" promptText="Search by CCCD, name..." HBox.hgrow="ALWAYS"/>
+            <Button text="Search" onAction="#onSearch" styleClass="btn-primary"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Import" styleClass="btn-success"/>
-            <Button text="Thêm mới" onAction="#onAddNew" styleClass="btn-primary"/>
+            <Button text="Add new" onAction="#onAddNew" styleClass="btn-primary"/>
         </HBox>
 
         <TableView fx:id="table" styleClass="table">
             <columns>
-                <TableColumn fx:id="colMaTs" text="Mã TS"/>
-                <TableColumn fx:id="colHoTen" text="Họ và tên"/>
+                <TableColumn fx:id="colMaTs" text="Registration"/>
+                <TableColumn fx:id="colHoTen" text="Full name"/>
                 <TableColumn fx:id="colCccd" text="CCCD"/>
-                <TableColumn fx:id="colNgaySinh" text="Ngày sinh"/>
+                <TableColumn fx:id="colNgaySinh" text="Date of birth"/>
                 <TableColumn fx:id="colEmail" text="Email"/>
-                <TableColumn fx:id="colSdt" text="SĐT"/>
+                <TableColumn fx:id="colSdt" text="Phone"/>
             </columns>
         </TableView>
-
-        <Label text="Ví dụ dữ liệu mẫu (demo)" styleClass="muted"/>
     </VBox>
 </VBox>
-

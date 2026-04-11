@@ -1,5 +1,13 @@
 package com.sgu.admission_desktop.controller;
 
+import com.sgu.admission_desktop.dto.AdmissionPreference.AdmissionPreferenceCreationRequest;
+import com.sgu.admission_desktop.dto.AdmissionPreference.AdmissionPreferenceResponse;
+import com.sgu.admission_desktop.dto.ApiResponse;
+import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
+import com.sgu.admission_desktop.dto.Major.MajorResponse;
+import com.sgu.admission_desktop.service.AdmissionPreferenceService;
+import com.sgu.admission_desktop.service.ApplicantService;
+import com.sgu.admission_desktop.service.MajorService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -8,9 +16,11 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class WishesPageController implements Initializable {
 
@@ -39,6 +49,12 @@ public class WishesPageController implements Initializable {
     private TableColumn<WishRow, String> colTrangThai;
 
     private final ObservableList<WishRow> items = FXCollections.observableArrayList();
+    private final AdmissionPreferenceService admissionPreferenceService = new AdmissionPreferenceService();
+    private final ApplicantService applicantService = new ApplicantService();
+    private final MajorService majorService = new MajorService();
+
+    private Map<String, String> applicantNameByCccd = Map.of();
+    private Map<String, String> majorNameByCode = Map.of();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -53,45 +69,120 @@ public class WishesPageController implements Initializable {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(items);
 
-        seedDemoData();
+        loadWishes();
     }
 
-    private void seedDemoData() {
-        items.setAll(
-                new WishRow("TS001", "Nguyễn Văn A", 1, "Công nghệ thông tin", "T1", "23.0", "Chờ xét"),
-                new WishRow("TS002", "Trần Thị B", 2, "Kinh tế", "T2", "27.0", "Trúng tuyển"),
-                new WishRow("TS003", "Lê Văn C", 1, "Kế toán", "T3", "21.5", "Không đạt")
-        );
+    private void loadWishes() {
+        try {
+            applicantNameByCccd = loadApplicantNames();
+            majorNameByCode = loadMajorNames();
+
+            ApiResponse<List<AdmissionPreferenceResponse>> response = admissionPreferenceService.getAll();
+            List<AdmissionPreferenceResponse> wishes = response.getData() == null ? List.of() : response.getData();
+
+            items.setAll(wishes.stream()
+                    .map(this::toRow)
+                    .toList());
+        } catch (Exception e) {
+            items.clear();
+            ControllerSupport.showError("Load wishes failed", ControllerSupport.extractMessage(e));
+        }
     }
 
     @FXML
     private void onAddNew() {
         CreateRowPopup.show(
-                        "Thêm nguyện vọng",
-                        List.of("Mã TS", "Họ tên", "Nguyện vọng", "Ngành", "Tổ hợp", "Tổng điểm", "Trạng thái")
+                        "Add wish",
+                        List.of(
+                                "CCCD",
+                                "Major code",
+                                "Priority order",
+                                "NV keys",
+                                "Method (optional)",
+                                "Subject group (optional)"
+                        )
                 )
-                .ifPresent(data -> items.add(mapToRow(data)));
+                .ifPresent(this::createWish);
     }
 
-    private WishRow mapToRow(Map<String, String> data) {
-        int nv = parseWishOrder(data.get("Nguyện vọng"));
+    private void createWish(Map<String, String> data) {
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("cccd", data.get("CCCD"));
+            payload.put("majorCode", data.get("Major code"));
+            payload.put("priorityOrder", ControllerSupport.parseInt(data.get("Priority order"), "Priority order"));
+            payload.put("nvKeys", data.get("NV keys"));
+            payload.put("method", blankToNull(data.get("Method (optional)")));
+            payload.put("subjectGroup", blankToNull(data.get("Subject group (optional)")));
+
+            AdmissionPreferenceCreationRequest request = ControllerSupport.convert(payload, AdmissionPreferenceCreationRequest.class);
+            admissionPreferenceService.create(request);
+            loadWishes();
+        } catch (IllegalArgumentException e) {
+            ControllerSupport.showError("Invalid wish", e.getMessage());
+        } catch (Exception e) {
+            ControllerSupport.showError("Create wish failed", ControllerSupport.extractMessage(e));
+        }
+    }
+
+    private Map<String, String> loadApplicantNames() {
+        ApiResponse<List<ApplicantResponse>> response = applicantService.getAll();
+        List<ApplicantResponse> applicants = response.getData() == null ? List.of() : response.getData();
+
+        return applicants.stream()
+                .map(ControllerSupport::toMap)
+                .collect(Collectors.toMap(
+                        item -> ControllerSupport.safeString(item.get("cccd")),
+                        item -> (ControllerSupport.safeString(item.get("lastName")) + " " + ControllerSupport.safeString(item.get("firstName"))).trim(),
+                        (left, right) -> left
+                ));
+    }
+
+    private Map<String, String> loadMajorNames() {
+        ApiResponse<List<MajorResponse>> response = majorService.getAll();
+        List<MajorResponse> majors = response.getData() == null ? List.of() : response.getData();
+
+        return majors.stream()
+                .map(ControllerSupport::toMap)
+                .collect(Collectors.toMap(
+                        item -> ControllerSupport.safeString(item.get("majorCode")),
+                        item -> ControllerSupport.safeString(item.get("majorName")),
+                        (left, right) -> left
+                ));
+    }
+
+    private WishRow toRow(AdmissionPreferenceResponse wish) {
+        Map<String, Object> data = ControllerSupport.toMap(wish);
+        String cccd = ControllerSupport.safeString(data.get("cccd"));
+        String majorCode = ControllerSupport.safeString(data.get("majorCode"));
+        int priorityOrder = parsePriorityOrder(data.get("priorityOrder"));
+
         return new WishRow(
-                data.get("Mã TS"),
-                data.get("Họ tên"),
-                nv,
-                data.get("Ngành"),
-                data.get("Tổ hợp"),
-                data.get("Tổng điểm"),
-                data.get("Trạng thái")
+                cccd,
+                applicantNameByCccd.getOrDefault(cccd, cccd),
+                priorityOrder,
+                majorNameByCode.getOrDefault(majorCode, majorCode),
+                ControllerSupport.safeString(data.get("subjectGroup")),
+                ControllerSupport.safeString(data.get("admissionScore")),
+                ControllerSupport.safeString(data.get("result"))
         );
     }
 
-    private int parseWishOrder(String value) {
+    private int parsePriorityOrder(Object value) {
+        if (value == null) {
+            return 1;
+        }
         try {
-            return Integer.parseInt(value);
+            return Integer.parseInt(String.valueOf(value));
         } catch (NumberFormatException ignored) {
             return 1;
         }
     }
-}
 
+    private String blankToNull(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
+    }
+}

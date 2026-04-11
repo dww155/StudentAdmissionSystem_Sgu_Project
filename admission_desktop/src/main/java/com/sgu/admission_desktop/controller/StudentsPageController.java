@@ -1,5 +1,9 @@
 package com.sgu.admission_desktop.controller;
 
+import com.sgu.admission_desktop.dto.ApiResponse;
+import com.sgu.admission_desktop.dto.Applicant.ApplicantCreationRequest;
+import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
+import com.sgu.admission_desktop.service.ApplicantService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -9,6 +13,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,6 +47,7 @@ public class StudentsPageController implements Initializable {
 
     private final ObservableList<StudentRow> master = FXCollections.observableArrayList();
     private final ObservableList<StudentRow> filtered = FXCollections.observableArrayList();
+    private final ApplicantService applicantService = new ApplicantService();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -55,7 +61,7 @@ public class StudentsPageController implements Initializable {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(filtered);
 
-        seedDemoData();
+        loadApplicants();
         applyFilter("");
 
         searchField.textProperty().addListener((obs, oldV, newV) -> applyFilter(newV));
@@ -69,13 +75,63 @@ public class StudentsPageController implements Initializable {
     @FXML
     private void onAddNew() {
         CreateRowPopup.show(
-                        "Thêm thí sinh mới",
-                        List.of("Mã TS", "Họ và tên", "CCCD", "Ngày sinh", "Email", "SĐT")
+                        "Add applicant",
+                        List.of(
+                                "Registration number",
+                                "Last name",
+                                "First name",
+                                "CCCD",
+                                "Date of birth (yyyy-MM-dd)",
+                                "Email",
+                                "Phone",
+                                "Gender",
+                                "Birth place",
+                                "Applicant type",
+                                "Region"
+                        )
                 )
-                .ifPresent(data -> {
-                    master.add(mapToRow(data));
-                    applyFilter(searchField.getText());
-                });
+                .ifPresent(this::createApplicant);
+    }
+
+    private void loadApplicants() {
+        try {
+            ApiResponse<List<ApplicantResponse>> response = applicantService.getAll();
+            List<ApplicantResponse> applicants = response.getData() == null ? List.of() : response.getData();
+
+            master.setAll(applicants.stream()
+                    .map(this::toRow)
+                    .toList());
+            applyFilter(searchField == null ? "" : searchField.getText());
+        } catch (Exception e) {
+            master.clear();
+            filtered.clear();
+            ControllerSupport.showError("Load applicants failed", ControllerSupport.extractMessage(e));
+        }
+    }
+
+    private void createApplicant(Map<String, String> data) {
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("registrationNumber", data.get("Registration number"));
+            payload.put("lastName", data.get("Last name"));
+            payload.put("firstName", data.get("First name"));
+            payload.put("cccd", data.get("CCCD"));
+            payload.put("dateOfBirth", ControllerSupport.parseDate(data.get("Date of birth (yyyy-MM-dd)"), "Date of birth"));
+            payload.put("email", data.get("Email"));
+            payload.put("phoneNumber", data.get("Phone"));
+            payload.put("gender", data.get("Gender"));
+            payload.put("birthPlace", data.get("Birth place"));
+            payload.put("applicantType", data.get("Applicant type"));
+            payload.put("region", data.get("Region"));
+
+            ApplicantCreationRequest request = ControllerSupport.convert(payload, ApplicantCreationRequest.class);
+            applicantService.create(request);
+            loadApplicants();
+        } catch (IllegalArgumentException e) {
+            ControllerSupport.showError("Invalid applicant", e.getMessage());
+        } catch (Exception e) {
+            ControllerSupport.showError("Create applicant failed", ControllerSupport.extractMessage(e));
+        }
     }
 
     private void applyFilter(String query) {
@@ -88,25 +144,19 @@ public class StudentsPageController implements Initializable {
         ));
     }
 
-    private void seedDemoData() {
-        master.setAll(
-                // xt_thisinhxettuyen25: sobaodanh, ho+ten, cccd, ngay_sinh, email, dien_thoai
-                new StudentRow("SBD001", "Nguyễn Văn A", "01234567890123456789", "2006-01-12", "a@example.com", "0901234567"),
-                new StudentRow("SBD002", "Trần Thị B", "01234567890123456780", "2006-03-30", "b@example.com", "0902345678"),
-                new StudentRow("SBD003", "Lê Văn C", "01234567890123456781", "2005-11-05", "c@example.com", "0903456789"),
-                new StudentRow("SBD004", "Phạm Thị D", "01234567890123456782", "2006-07-21", "d@example.com", "0904567890")
-        );
-    }
+    private StudentRow toRow(ApplicantResponse applicant) {
+        Map<String, Object> data = ControllerSupport.toMap(applicant);
+        String lastName = ControllerSupport.safeString(data.get("lastName"));
+        String firstName = ControllerSupport.safeString(data.get("firstName"));
+        String fullName = (lastName + " " + firstName).trim();
 
-    private StudentRow mapToRow(Map<String, String> data) {
         return new StudentRow(
-                data.get("Mã TS"),
-                data.get("Họ và tên"),
-                data.get("CCCD"),
-                data.get("Ngày sinh"),
-                data.get("Email"),
-                data.get("SĐT")
+                ControllerSupport.safeString(data.get("registrationNumber")),
+                fullName,
+                ControllerSupport.safeString(data.get("cccd")),
+                ControllerSupport.safeString(data.get("dateOfBirth")),
+                ControllerSupport.safeString(data.get("email")),
+                ControllerSupport.safeString(data.get("phoneNumber"))
         );
     }
 }
-

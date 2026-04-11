@@ -1,5 +1,9 @@
 package com.sgu.admission_desktop.controller;
 
+import com.sgu.admission_desktop.dto.ApiResponse;
+import com.sgu.admission_desktop.dto.SubjectCombination.SubjectCombinationCreationRequest;
+import com.sgu.admission_desktop.dto.SubjectCombination.SubjectCombinationResponse;
+import com.sgu.admission_desktop.service.SubjectCombinationService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -8,6 +12,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -33,6 +38,7 @@ public class SubjectsPageController implements Initializable {
     private TableColumn<SubjectRow, String> colMon3;
 
     private final ObservableList<SubjectRow> items = FXCollections.observableArrayList();
+    private final SubjectCombinationService subjectCombinationService = new SubjectCombinationService();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -45,31 +51,57 @@ public class SubjectsPageController implements Initializable {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(items);
 
-        seedDemoData();
+        loadSubjectCombinations();
     }
 
-    private void seedDemoData() {
-        items.setAll(
-                new SubjectRow("T1", "Tổ hợp A00", "Toán", "Lý", "Hóa"),
-                new SubjectRow("T2", "Tổ hợp C00", "Văn", "Sử", "Địa"),
-                new SubjectRow("T3", "Tổ hợp D01", "Toán", "Văn", "Anh")
-        );
+    private void loadSubjectCombinations() {
+        try {
+            ApiResponse<List<SubjectCombinationResponse>> response = subjectCombinationService.getAll();
+            List<SubjectCombinationResponse> subjectCombinations = response.getData() == null ? List.of() : response.getData();
+
+            items.setAll(subjectCombinations.stream()
+                    .map(this::toRow)
+                    .toList());
+        } catch (Exception e) {
+            items.clear();
+            ControllerSupport.showError("Load subject combinations failed", ControllerSupport.extractMessage(e));
+        }
     }
 
     @FXML
     private void onAddNew() {
-        CreateRowPopup.show("Thêm tổ hợp môn", List.of("Mã tổ hợp", "Tên tổ hợp", "Môn 1", "Môn 2", "Môn 3"))
-                .ifPresent(data -> items.add(mapToRow(data)));
+        CreateRowPopup.show(
+                        "Add subject combination",
+                        List.of("Code", "Name", "Subject 1", "Subject 2", "Subject 3")
+                )
+                .ifPresent(this::createSubjectCombination);
     }
 
-    private SubjectRow mapToRow(Map<String, String> data) {
+    private void createSubjectCombination(Map<String, String> data) {
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("code", data.get("Code"));
+            payload.put("name", data.get("Name"));
+            payload.put("mon1", data.get("Subject 1"));
+            payload.put("mon2", data.get("Subject 2"));
+            payload.put("mon3", data.get("Subject 3"));
+
+            SubjectCombinationCreationRequest request = ControllerSupport.convert(payload, SubjectCombinationCreationRequest.class);
+            subjectCombinationService.create(request);
+            loadSubjectCombinations();
+        } catch (Exception e) {
+            ControllerSupport.showError("Create subject combination failed", ControllerSupport.extractMessage(e));
+        }
+    }
+
+    private SubjectRow toRow(SubjectCombinationResponse subjectCombination) {
+        Map<String, Object> data = ControllerSupport.toMap(subjectCombination);
         return new SubjectRow(
-                data.get("Mã tổ hợp"),
-                data.get("Tên tổ hợp"),
-                data.get("Môn 1"),
-                data.get("Môn 2"),
-                data.get("Môn 3")
+                ControllerSupport.safeString(data.get("code")),
+                ControllerSupport.safeString(data.get("name")),
+                ControllerSupport.safeString(data.get("mon1")),
+                ControllerSupport.safeString(data.get("mon2")),
+                ControllerSupport.safeString(data.get("mon3"))
         );
     }
 }
-
