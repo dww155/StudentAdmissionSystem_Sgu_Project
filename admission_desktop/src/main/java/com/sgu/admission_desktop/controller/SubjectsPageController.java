@@ -1,9 +1,11 @@
 package com.sgu.admission_desktop.controller;
 
 import com.sgu.admission_desktop.dto.ApiResponse;
+import com.sgu.admission_desktop.dto.SubjectCombination.ListSubjectCombinationCreationRequest;
 import com.sgu.admission_desktop.dto.SubjectCombination.SubjectCombinationCreationRequest;
 import com.sgu.admission_desktop.dto.SubjectCombination.SubjectCombinationResponse;
 import com.sgu.admission_desktop.service.SubjectCombinationService;
+import com.sgu.admission_desktop.util.ExcelImportUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -39,6 +41,13 @@ public class SubjectsPageController implements Initializable {
 
     private final ObservableList<SubjectRow> items = FXCollections.observableArrayList();
     private final SubjectCombinationService subjectCombinationService = new SubjectCombinationService();
+    private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
+            ExcelImportUtil.ColumnDefinition.required("code", "Code", "ma to hop", "subject combination code"),
+            ExcelImportUtil.ColumnDefinition.required("name", "Name", "ten to hop", "subject combination name"),
+            ExcelImportUtil.ColumnDefinition.required("mon1", "Subject 1", "mon 1"),
+            ExcelImportUtil.ColumnDefinition.required("mon2", "Subject 2", "mon 2"),
+            ExcelImportUtil.ColumnDefinition.required("mon3", "Subject 3", "mon 3")
+    );
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -77,6 +86,38 @@ public class SubjectsPageController implements Initializable {
                 .ifPresent(this::createSubjectCombination);
     }
 
+    @FXML
+    private void onImport() {
+        try {
+            var importedSubjectCombinations = ExcelImportUtil.chooseAndRead(
+                    table.getScene() == null ? null : table.getScene().getWindow(),
+                    "Import subject combinations",
+                    IMPORT_COLUMNS,
+                    this::toImportedSubjectCombinationRequest
+            );
+
+            if (importedSubjectCombinations.isEmpty()) {
+                return;
+            }
+
+            List<SubjectCombinationCreationRequest> requests = importedSubjectCombinations.get();
+            subjectCombinationService.createBulk(
+                    ListSubjectCombinationCreationRequest.builder()
+                            .subjectCombinationCreationRequestList(requests)
+                            .build()
+            );
+            loadSubjectCombinations();
+            ControllerSupport.showInfo(
+                    "Import subject combinations",
+                    "Imported " + requests.size() + " subject combinations from Excel."
+            );
+        } catch (IllegalArgumentException e) {
+            ControllerSupport.showError("Import subject combinations failed", e.getMessage());
+        } catch (Exception e) {
+            ControllerSupport.showError("Import subject combinations failed", ControllerSupport.extractMessage(e));
+        }
+    }
+
     private void createSubjectCombination(Map<String, String> data) {
         try {
             Map<String, Object> payload = new LinkedHashMap<>();
@@ -92,6 +133,16 @@ public class SubjectsPageController implements Initializable {
         } catch (Exception e) {
             ControllerSupport.showError("Create subject combination failed", ControllerSupport.extractMessage(e));
         }
+    }
+
+    private SubjectCombinationCreationRequest toImportedSubjectCombinationRequest(Map<String, String> data) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("code", data.get("code"));
+        payload.put("name", data.get("name"));
+        payload.put("mon1", data.get("mon1"));
+        payload.put("mon2", data.get("mon2"));
+        payload.put("mon3", data.get("mon3"));
+        return ControllerSupport.convert(payload, SubjectCombinationCreationRequest.class);
     }
 
     private SubjectRow toRow(SubjectCombinationResponse subjectCombination) {

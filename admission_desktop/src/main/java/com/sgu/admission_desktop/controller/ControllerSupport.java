@@ -33,6 +33,9 @@ public final class ControllerSupport {
     }
 
     public static int parseInt(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
         try {
             return Integer.parseInt(value.trim());
         } catch (NumberFormatException e) {
@@ -41,6 +44,9 @@ public final class ControllerSupport {
     }
 
     public static BigDecimal parseDecimal(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
         try {
             return new BigDecimal(value.trim());
         } catch (NumberFormatException e) {
@@ -49,6 +55,9 @@ public final class ControllerSupport {
     }
 
     public static LocalDate parseDate(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
         try {
             return LocalDate.parse(value.trim());
         } catch (DateTimeParseException e) {
@@ -58,6 +67,14 @@ public final class ControllerSupport {
 
     public static String safeString(Object value) {
         return value == null ? "" : String.valueOf(value);
+    }
+
+    public static String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     public static String formatDecimal(BigDecimal value) {

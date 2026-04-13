@@ -15,7 +15,7 @@
             <TextField fx:id="searchField" promptText="Search by CCCD, name..." HBox.hgrow="ALWAYS"/>
             <Button text="Search" onAction="#onSearch" styleClass="btn-primary"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Import" styleClass="btn-success"/>
+            <Button text="Import" onAction="#onImport" styleClass="btn-success"/>
             <Button text="Add new" onAction="#onAddNew" styleClass="btn-primary"/>
         </HBox>
 

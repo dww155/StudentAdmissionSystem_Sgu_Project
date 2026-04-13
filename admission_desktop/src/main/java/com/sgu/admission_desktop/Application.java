@@ -24,7 +24,7 @@ public class Application extends javafx.application.Application {
 
     public static void showLoginLayout() {
         ApiClient.clearToken();
-        setScene("fxml/layouts/login-layout.fxml", 980, 620);
+        setScene("fxml/layouts/login-layout.fxml", 666, 400);
     }
 
     public static void showMainLayout() {

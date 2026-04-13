@@ -2,12 +2,14 @@ package com.sgu.admission_desktop.controller;
 
 import com.sgu.admission_desktop.dto.AdmissionPreference.AdmissionPreferenceCreationRequest;
 import com.sgu.admission_desktop.dto.AdmissionPreference.AdmissionPreferenceResponse;
+import com.sgu.admission_desktop.dto.AdmissionPreference.ListAdmissionPreferenceCreationRequest;
 import com.sgu.admission_desktop.dto.ApiResponse;
 import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
 import com.sgu.admission_desktop.dto.Major.MajorResponse;
 import com.sgu.admission_desktop.service.AdmissionPreferenceService;
 import com.sgu.admission_desktop.service.ApplicantService;
 import com.sgu.admission_desktop.service.MajorService;
+import com.sgu.admission_desktop.util.ExcelImportUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -52,6 +54,14 @@ public class WishesPageController implements Initializable {
     private final AdmissionPreferenceService admissionPreferenceService = new AdmissionPreferenceService();
     private final ApplicantService applicantService = new ApplicantService();
     private final MajorService majorService = new MajorService();
+    private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
+            ExcelImportUtil.ColumnDefinition.required("cccd", "CCCD"),
+            ExcelImportUtil.ColumnDefinition.required("majorCode", "Major code", "ma nganh"),
+            ExcelImportUtil.ColumnDefinition.required("priorityOrder", "Priority order", "nguyen vong", "thu tu nguyen vong"),
+            ExcelImportUtil.ColumnDefinition.required("nvKeys", "NV keys", "nv key"),
+            ExcelImportUtil.ColumnDefinition.optional("method", "Method", "phuong thuc"),
+            ExcelImportUtil.ColumnDefinition.optional("subjectGroup", "Subject group", "to hop", "subject combination")
+    );
 
     private Map<String, String> applicantNameByCccd = Map.of();
     private Map<String, String> majorNameByCode = Map.of();
@@ -105,6 +115,35 @@ public class WishesPageController implements Initializable {
                 .ifPresent(this::createWish);
     }
 
+    @FXML
+    private void onImport() {
+        try {
+            var importedWishes = ExcelImportUtil.chooseAndRead(
+                    table.getScene() == null ? null : table.getScene().getWindow(),
+                    "Import wishes",
+                    IMPORT_COLUMNS,
+                    this::toImportedWishRequest
+            );
+
+            if (importedWishes.isEmpty()) {
+                return;
+            }
+
+            List<AdmissionPreferenceCreationRequest> requests = importedWishes.get();
+            admissionPreferenceService.createBulk(
+                    ListAdmissionPreferenceCreationRequest.builder()
+                            .admissionPreferenceCreationRequestList(requests)
+                            .build()
+            );
+            loadWishes();
+            ControllerSupport.showInfo("Import wishes", "Imported " + requests.size() + " wishes from Excel.");
+        } catch (IllegalArgumentException e) {
+            ControllerSupport.showError("Import wishes failed", e.getMessage());
+        } catch (Exception e) {
+            ControllerSupport.showError("Import wishes failed", ControllerSupport.extractMessage(e));
+        }
+    }
+
     private void createWish(Map<String, String> data) {
         try {
             Map<String, Object> payload = new LinkedHashMap<>();
@@ -123,6 +162,17 @@ public class WishesPageController implements Initializable {
         } catch (Exception e) {
             ControllerSupport.showError("Create wish failed", ControllerSupport.extractMessage(e));
         }
+    }
+
+    private AdmissionPreferenceCreationRequest toImportedWishRequest(Map<String, String> data) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("cccd", data.get("cccd"));
+        payload.put("majorCode", data.get("majorCode"));
+        payload.put("priorityOrder", ControllerSupport.parseInt(data.get("priorityOrder"), "Priority order"));
+        payload.put("nvKeys", data.get("nvKeys"));
+        payload.put("method", blankToNull(data.get("method")));
+        payload.put("subjectGroup", blankToNull(data.get("subjectGroup")));
+        return ControllerSupport.convert(payload, AdmissionPreferenceCreationRequest.class);
     }
 
     private Map<String, String> loadApplicantNames() {
@@ -180,9 +230,6 @@ public class WishesPageController implements Initializable {
     }
 
     private String blankToNull(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return null;
-        }
-        return value.trim();
+        return ControllerSupport.trimToNull(value);
     }
 }

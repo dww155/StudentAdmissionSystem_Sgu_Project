@@ -15,6 +15,8 @@ module com.sgu.admission_desktop {
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.datatype.jsr310;
+    requires poi;
+    requires poi.ooxml;
 
     requires static lombok;
     requires java.net.http;
