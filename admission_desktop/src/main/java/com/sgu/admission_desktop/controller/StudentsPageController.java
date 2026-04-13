@@ -3,7 +3,9 @@ package com.sgu.admission_desktop.controller;
 import com.sgu.admission_desktop.dto.ApiResponse;
 import com.sgu.admission_desktop.dto.Applicant.ApplicantCreationRequest;
 import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
+import com.sgu.admission_desktop.dto.Applicant.ListApplicantCreationRequest;
 import com.sgu.admission_desktop.service.ApplicantService;
+import com.sgu.admission_desktop.util.ExcelImportUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -48,6 +50,19 @@ public class StudentsPageController implements Initializable {
     private final ObservableList<StudentRow> master = FXCollections.observableArrayList();
     private final ObservableList<StudentRow> filtered = FXCollections.observableArrayList();
     private final ApplicantService applicantService = new ApplicantService();
+    private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
+            ExcelImportUtil.ColumnDefinition.required("registrationNumber", "Registration number", "registration", "ma ts", "mats", "so bao danh"),
+            ExcelImportUtil.ColumnDefinition.required("lastName", "Last name", "lastname", "ho lot", "ho"),
+            ExcelImportUtil.ColumnDefinition.required("firstName", "First name", "firstname", "ten"),
+            ExcelImportUtil.ColumnDefinition.required("cccd", "CCCD", "citizenid"),
+            ExcelImportUtil.ColumnDefinition.required("dateOfBirth", "Date of birth", "dob", "ngay sinh"),
+            ExcelImportUtil.ColumnDefinition.required("email", "Email"),
+            ExcelImportUtil.ColumnDefinition.required("phoneNumber", "Phone", "phone", "sdt", "so dien thoai"),
+            ExcelImportUtil.ColumnDefinition.required("gender", "Gender", "gioi tinh"),
+            ExcelImportUtil.ColumnDefinition.required("birthPlace", "Birth place", "noi sinh"),
+            ExcelImportUtil.ColumnDefinition.required("applicantType", "Applicant type", "doi tuong"),
+            ExcelImportUtil.ColumnDefinition.required("region", "Region", "khu vuc")
+    );
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -93,6 +108,35 @@ public class StudentsPageController implements Initializable {
                 .ifPresent(this::createApplicant);
     }
 
+    @FXML
+    private void onImport() {
+        try {
+            var importedApplicants = ExcelImportUtil.chooseAndRead(
+                    table.getScene() == null ? null : table.getScene().getWindow(),
+                    "Import applicants",
+                    IMPORT_COLUMNS,
+                    this::toImportedApplicantRequest
+            );
+
+            if (importedApplicants.isEmpty()) {
+                return;
+            }
+
+            List<ApplicantCreationRequest> requests = importedApplicants.get();
+            applicantService.createBulk(
+                    ListApplicantCreationRequest.builder()
+                            .applicantCreationRequestList(requests)
+                            .build()
+            );
+            loadApplicants();
+            ControllerSupport.showInfo("Import applicants", "Imported " + requests.size() + " applicants from Excel.");
+        } catch (IllegalArgumentException e) {
+            ControllerSupport.showError("Import applicants failed", e.getMessage());
+        } catch (Exception e) {
+            ControllerSupport.showError("Import applicants failed", ControllerSupport.extractMessage(e));
+        }
+    }
+
     private void loadApplicants() {
         try {
             ApiResponse<List<ApplicantResponse>> response = applicantService.getAll();
@@ -132,6 +176,22 @@ public class StudentsPageController implements Initializable {
         } catch (Exception e) {
             ControllerSupport.showError("Create applicant failed", ControllerSupport.extractMessage(e));
         }
+    }
+
+    private ApplicantCreationRequest toImportedApplicantRequest(Map<String, String> data) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("registrationNumber", data.get("registrationNumber"));
+        payload.put("lastName", data.get("lastName"));
+        payload.put("firstName", data.get("firstName"));
+        payload.put("cccd", data.get("cccd"));
+        payload.put("dateOfBirth", ControllerSupport.parseDate(data.get("dateOfBirth"), "Date of birth"));
+        payload.put("email", data.get("email"));
+        payload.put("phoneNumber", data.get("phoneNumber"));
+        payload.put("gender", data.get("gender"));
+        payload.put("birthPlace", data.get("birthPlace"));
+        payload.put("applicantType", data.get("applicantType"));
+        payload.put("region", data.get("region"));
+        return ControllerSupport.convert(payload, ApplicantCreationRequest.class);
     }
 
     private void applyFilter(String query) {

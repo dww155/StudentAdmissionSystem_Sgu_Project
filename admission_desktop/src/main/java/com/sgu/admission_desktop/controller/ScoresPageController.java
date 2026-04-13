@@ -4,8 +4,10 @@ import com.sgu.admission_desktop.dto.ApiResponse;
 import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
 import com.sgu.admission_desktop.dto.ExamScore.ExamScoreCreationRequest;
 import com.sgu.admission_desktop.dto.ExamScore.ExamScoreResponse;
+import com.sgu.admission_desktop.dto.ExamScore.ListExamScoreCreationRequest;
 import com.sgu.admission_desktop.service.ApplicantService;
 import com.sgu.admission_desktop.service.ExamScoreService;
+import com.sgu.admission_desktop.util.ExcelImportUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -50,6 +52,28 @@ public class ScoresPageController implements Initializable {
     private final ObservableList<ScoreRow> items = FXCollections.observableArrayList();
     private final ExamScoreService examScoreService = new ExamScoreService();
     private final ApplicantService applicantService = new ApplicantService();
+    private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
+            ExcelImportUtil.ColumnDefinition.required("cccd", "CCCD"),
+            ExcelImportUtil.ColumnDefinition.required("registrationNumber", "Registration number", "registration", "ma ts", "mats"),
+            ExcelImportUtil.ColumnDefinition.required("conversionCode", "Conversion code", "ma quy doi"),
+            ExcelImportUtil.ColumnDefinition.required("method", "Method", "phuong thuc"),
+            ExcelImportUtil.ColumnDefinition.required("to", "Toan", "math"),
+            ExcelImportUtil.ColumnDefinition.required("li", "Ly", "physics"),
+            ExcelImportUtil.ColumnDefinition.required("ho", "Hoa", "chemistry"),
+            ExcelImportUtil.ColumnDefinition.optional("si", "Sinh", "biology"),
+            ExcelImportUtil.ColumnDefinition.optional("su", "Su", "history"),
+            ExcelImportUtil.ColumnDefinition.optional("di", "Dia", "geography"),
+            ExcelImportUtil.ColumnDefinition.optional("va", "Van", "literature"),
+            ExcelImportUtil.ColumnDefinition.optional("n1Thi", "N1 thi", "n1 exam"),
+            ExcelImportUtil.ColumnDefinition.optional("n1Cc", "N1 cc", "n1 certificate"),
+            ExcelImportUtil.ColumnDefinition.optional("cncn", "CNCN"),
+            ExcelImportUtil.ColumnDefinition.optional("cnnn", "CNNN"),
+            ExcelImportUtil.ColumnDefinition.optional("ti", "Tieng Trung", "chinese"),
+            ExcelImportUtil.ColumnDefinition.optional("ktpl", "KTPL"),
+            ExcelImportUtil.ColumnDefinition.optional("nl1", "NL1"),
+            ExcelImportUtil.ColumnDefinition.optional("nk1", "NK1"),
+            ExcelImportUtil.ColumnDefinition.optional("nk2", "NK2")
+    );
 
     private Map<String, String> applicantNameByCccd = Map.of();
 
@@ -94,6 +118,35 @@ public class ScoresPageController implements Initializable {
                 .ifPresent(this::createExamScore);
     }
 
+    @FXML
+    private void onImport() {
+        try {
+            var importedScores = ExcelImportUtil.chooseAndRead(
+                    table.getScene() == null ? null : table.getScene().getWindow(),
+                    "Import exam scores",
+                    IMPORT_COLUMNS,
+                    this::toImportedExamScoreRequest
+            );
+
+            if (importedScores.isEmpty()) {
+                return;
+            }
+
+            List<ExamScoreCreationRequest> requests = importedScores.get();
+            examScoreService.createBulk(
+                    ListExamScoreCreationRequest.builder()
+                            .examScoreCreationRequestList(requests)
+                            .build()
+            );
+            loadScores();
+            ControllerSupport.showInfo("Import exam scores", "Imported " + requests.size() + " exam scores from Excel.");
+        } catch (IllegalArgumentException e) {
+            ControllerSupport.showError("Import exam scores failed", e.getMessage());
+        } catch (Exception e) {
+            ControllerSupport.showError("Import exam scores failed", ControllerSupport.extractMessage(e));
+        }
+    }
+
     private void createExamScore(Map<String, String> data) {
         try {
             Map<String, Object> payload = new LinkedHashMap<>();
@@ -130,6 +183,31 @@ public class ScoresPageController implements Initializable {
         }
     }
 
+    private ExamScoreCreationRequest toImportedExamScoreRequest(Map<String, String> data) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("cccd", data.get("cccd"));
+        payload.put("registrationNumber", data.get("registrationNumber"));
+        payload.put("conversionCode", data.get("conversionCode"));
+        payload.put("method", data.get("method"));
+        payload.put("to", ControllerSupport.parseDecimal(data.get("to"), "Toan"));
+        payload.put("li", ControllerSupport.parseDecimal(data.get("li"), "Ly"));
+        payload.put("ho", ControllerSupport.parseDecimal(data.get("ho"), "Hoa"));
+        payload.put("si", decimalOrZero(data.get("si"), "Sinh"));
+        payload.put("su", decimalOrZero(data.get("su"), "Su"));
+        payload.put("di", decimalOrZero(data.get("di"), "Dia"));
+        payload.put("va", decimalOrZero(data.get("va"), "Van"));
+        payload.put("n1Thi", decimalOrZero(data.get("n1Thi"), "N1 thi"));
+        payload.put("n1Cc", decimalOrZero(data.get("n1Cc"), "N1 cc"));
+        payload.put("cncn", decimalOrZero(data.get("cncn"), "CNCN"));
+        payload.put("cnnn", decimalOrZero(data.get("cnnn"), "CNNN"));
+        payload.put("ti", decimalOrZero(data.get("ti"), "Tieng Trung"));
+        payload.put("ktpl", decimalOrZero(data.get("ktpl"), "KTPL"));
+        payload.put("nl1", decimalOrZero(data.get("nl1"), "NL1"));
+        payload.put("nk1", decimalOrZero(data.get("nk1"), "NK1"));
+        payload.put("nk2", decimalOrZero(data.get("nk2"), "NK2"));
+        return ControllerSupport.convert(payload, ExamScoreCreationRequest.class);
+    }
+
     private Map<String, String> loadApplicantNames() {
         ApiResponse<List<ApplicantResponse>> response = applicantService.getAll();
         List<ApplicantResponse> applicants = response.getData() == null ? List.of() : response.getData();
@@ -156,5 +234,10 @@ public class ScoresPageController implements Initializable {
                 ControllerSupport.safeString(data.get("ho")),
                 ControllerSupport.safeString(data.get("standardizedScore"))
         );
+    }
+
+    private BigDecimal decimalOrZero(String value, String fieldName) {
+        String trimmed = ControllerSupport.trimToNull(value);
+        return trimmed == null ? BigDecimal.ZERO : ControllerSupport.parseDecimal(trimmed, fieldName);
     }
 }

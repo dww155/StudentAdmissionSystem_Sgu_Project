@@ -2,10 +2,12 @@ package com.sgu.admission_desktop.controller;
 
 import com.sgu.admission_desktop.dto.AdmissionBonusScore.AdmissionBonusScoreCreationRequest;
 import com.sgu.admission_desktop.dto.AdmissionBonusScore.AdmissionBonusScoreResponse;
+import com.sgu.admission_desktop.dto.AdmissionBonusScore.ListAdmissionBonusScoreCreationRequest;
 import com.sgu.admission_desktop.dto.ApiResponse;
 import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
 import com.sgu.admission_desktop.service.AdmissionBonusScoreService;
 import com.sgu.admission_desktop.service.ApplicantService;
+import com.sgu.admission_desktop.util.ExcelImportUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -40,6 +42,17 @@ public class BonusPageController implements Initializable {
     private final ObservableList<BonusRow> items = FXCollections.observableArrayList();
     private final AdmissionBonusScoreService admissionBonusScoreService = new AdmissionBonusScoreService();
     private final ApplicantService applicantService = new ApplicantService();
+    private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
+            ExcelImportUtil.ColumnDefinition.required("cccd", "CCCD"),
+            ExcelImportUtil.ColumnDefinition.required("majorCode", "Major code", "ma nganh"),
+            ExcelImportUtil.ColumnDefinition.required("subjectCombinationCode", "Subject combination code", "ma to hop"),
+            ExcelImportUtil.ColumnDefinition.required("method", "Method", "phuong thuc"),
+            ExcelImportUtil.ColumnDefinition.required("bonusScore", "Bonus score", "diem cong"),
+            ExcelImportUtil.ColumnDefinition.required("priorityScore", "Priority score", "diem uu tien"),
+            ExcelImportUtil.ColumnDefinition.required("totalScore", "Total score", "tong diem"),
+            ExcelImportUtil.ColumnDefinition.required("dcKeys", "DC keys", "dc key"),
+            ExcelImportUtil.ColumnDefinition.optional("note", "Note", "ly do")
+    );
 
     private Map<String, String> applicantNameByCccd = Map.of();
 
@@ -91,6 +104,38 @@ public class BonusPageController implements Initializable {
                 .ifPresent(this::createBonusScore);
     }
 
+    @FXML
+    private void onImport() {
+        try {
+            var importedBonusScores = ExcelImportUtil.chooseAndRead(
+                    table.getScene() == null ? null : table.getScene().getWindow(),
+                    "Import bonus scores",
+                    IMPORT_COLUMNS,
+                    this::toImportedBonusScoreRequest
+            );
+
+            if (importedBonusScores.isEmpty()) {
+                return;
+            }
+
+            List<AdmissionBonusScoreCreationRequest> requests = importedBonusScores.get();
+            admissionBonusScoreService.createBulk(
+                    ListAdmissionBonusScoreCreationRequest.builder()
+                            .admissionBonusScoreCreationRequestList(requests)
+                            .build()
+            );
+            loadBonusScores();
+            ControllerSupport.showInfo(
+                    "Import bonus scores",
+                    "Imported " + requests.size() + " bonus scores from Excel."
+            );
+        } catch (IllegalArgumentException e) {
+            ControllerSupport.showError("Import bonus scores failed", e.getMessage());
+        } catch (Exception e) {
+            ControllerSupport.showError("Import bonus scores failed", ControllerSupport.extractMessage(e));
+        }
+    }
+
     private void createBonusScore(Map<String, String> data) {
         try {
             Map<String, Object> payload = new LinkedHashMap<>();
@@ -112,6 +157,20 @@ public class BonusPageController implements Initializable {
         } catch (Exception e) {
             ControllerSupport.showError("Create bonus score failed", ControllerSupport.extractMessage(e));
         }
+    }
+
+    private AdmissionBonusScoreCreationRequest toImportedBonusScoreRequest(Map<String, String> data) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("cccd", data.get("cccd"));
+        payload.put("majorCode", data.get("majorCode"));
+        payload.put("subjectCombinationCode", data.get("subjectCombinationCode"));
+        payload.put("method", data.get("method"));
+        payload.put("bonusScore", ControllerSupport.parseDecimal(data.get("bonusScore"), "Bonus score"));
+        payload.put("priorityScore", ControllerSupport.parseDecimal(data.get("priorityScore"), "Priority score"));
+        payload.put("totalScore", ControllerSupport.parseDecimal(data.get("totalScore"), "Total score"));
+        payload.put("dcKeys", data.get("dcKeys"));
+        payload.put("note", blankToNull(data.get("note")));
+        return ControllerSupport.convert(payload, AdmissionBonusScoreCreationRequest.class);
     }
 
     private Map<String, String> loadApplicantNames() {
@@ -139,9 +198,6 @@ public class BonusPageController implements Initializable {
     }
 
     private String blankToNull(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return null;
-        }
-        return value.trim();
+        return ControllerSupport.trimToNull(value);
     }
 }
