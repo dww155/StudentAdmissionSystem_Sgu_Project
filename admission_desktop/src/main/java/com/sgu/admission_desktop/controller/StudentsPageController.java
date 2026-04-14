@@ -1,5 +1,6 @@
 package com.sgu.admission_desktop.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.sgu.admission_desktop.dto.ApiResponse;
 import com.sgu.admission_desktop.dto.Applicant.ApplicantCreationRequest;
 import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
@@ -11,6 +12,8 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -53,10 +56,26 @@ public class StudentsPageController implements Initializable {
     @FXML
     private TableColumn<StudentRow, String> colSdt;
 
+    @FXML
+    private Button prevPageButton;
+
+    @FXML
+    private Button nextPageButton;
+
+    @FXML
+    private Label pageInfoLabel;
+
     private final ObservableList<StudentRow> master = FXCollections.observableArrayList();
     private final ObservableList<StudentRow> filtered = FXCollections.observableArrayList();
     private final ApplicantService applicantService = new ApplicantService();
     private static final int IMPORT_BATCH_SIZE = 500;
+    private static final int PAGE_SIZE = 20;
+    private static final String PAGE_SORT_BY = "id";
+    private static final String PAGE_SORT_DIR = "asc";
+
+    private int currentPage = 0;
+    private int totalPages = 1;
+    private long totalElements = 0;
 
     private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
             ExcelImportUtil.ColumnDefinition.optional("stt", "STT"),
@@ -87,8 +106,7 @@ public class StudentsPageController implements Initializable {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(filtered);
 
-        loadApplicants();
-        applyFilter("");
+        loadApplicants(0);
 
         searchField.textProperty().addListener((obs, oldV, newV) -> applyFilter(newV));
     }
@@ -96,6 +114,22 @@ public class StudentsPageController implements Initializable {
     @FXML
     private void onSearch() {
         applyFilter(searchField.getText());
+    }
+
+    @FXML
+    private void onPreviousPage() {
+        if (currentPage <= 0) {
+            return;
+        }
+        loadApplicants(currentPage - 1);
+    }
+
+    @FXML
+    private void onNextPage() {
+        if (currentPage + 1 >= totalPages) {
+            return;
+        }
+        loadApplicants(currentPage + 1);
     }
 
     @FXML
@@ -161,7 +195,7 @@ public class StudentsPageController implements Initializable {
 
         importTask.setOnSucceeded(event -> {
             ImportSummary summary = importTask.getValue();
-            loadApplicants();
+            loadApplicants(currentPage);
             ControllerSupport.showInfo(
                     "Import applicants",
                     "Imported " + summary.importedCount() + "/" + summary.totalCount() + " applicants from Excel."
@@ -178,18 +212,38 @@ public class StudentsPageController implements Initializable {
         importThread.start();
     }
 
-    private void loadApplicants() {
+    private void loadApplicants(int requestedPage) {
         try {
-            ApiResponse<List<ApplicantResponse>> response = applicantService.getAll();
-            List<ApplicantResponse> applicants = response.getData() == null ? List.of() : response.getData();
+            ApiResponse<Map<String, Object>> response = applicantService.getPaginated(
+                    Math.max(requestedPage, 0),
+                    PAGE_SIZE,
+                    PAGE_SORT_BY,
+                    PAGE_SORT_DIR
+            );
+
+            Map<String, Object> pageData = response.getData() == null ? Map.of() : response.getData();
+            List<ApplicantResponse> applicants = extractApplicants(pageData);
 
             master.setAll(applicants.stream()
                     .map(this::toRow)
                     .toList());
+            currentPage = Math.max(extractInt(pageData, requestedPage, "pageNumber", "number", "page"), 0);
+            totalPages = Math.max(extractInt(pageData, 1, "totalPages"), 1);
+            totalElements = Math.max(extractLong(pageData, applicants.size(), "totalElements"), applicants.size());
+
+            // Keep the current page index within available bounds if backend responses are inconsistent.
+            if (currentPage >= totalPages) {
+                currentPage = totalPages - 1;
+            }
             applyFilter(searchField == null ? "" : searchField.getText());
+            updatePaginationControls();
         } catch (Exception e) {
             master.clear();
             filtered.clear();
+            currentPage = 0;
+            totalPages = 1;
+            totalElements = 0;
+            updatePaginationControls();
             ControllerSupport.showError("Load applicants failed", ControllerSupport.extractMessage(e));
         }
     }
@@ -211,7 +265,7 @@ public class StudentsPageController implements Initializable {
 
             ApplicantCreationRequest request = ControllerSupport.convert(payload, ApplicantCreationRequest.class);
             applicantService.create(request);
-            loadApplicants();
+            loadApplicants(currentPage);
         } catch (IllegalArgumentException e) {
             ControllerSupport.showError("Invalid applicant", e.getMessage());
         } catch (Exception e) {
@@ -246,6 +300,93 @@ public class StudentsPageController implements Initializable {
                         || r.hoTen().toLowerCase(Locale.ROOT).contains(q)
                         || r.cccd().toLowerCase(Locale.ROOT).contains(q)
         ));
+    }
+
+    private List<ApplicantResponse> extractApplicants(Map<String, Object> pageData) {
+        Object content = firstNonNull(
+                pageData.get("content"),
+                pageData.get("items"),
+                pageData.get("records")
+        );
+        if (content == null) {
+            return List.of();
+        }
+        return ControllerSupport.convertList(
+                content,
+                new TypeReference<List<ApplicantResponse>>() {
+                }
+        );
+    }
+
+    private int extractInt(Map<String, Object> data, int defaultValue, String... keys) {
+        for (String key : keys) {
+            Integer parsed = parseInt(data.get(key));
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return defaultValue;
+    }
+
+    private long extractLong(Map<String, Object> data, long defaultValue, String... keys) {
+        for (String key : keys) {
+            Long parsed = parseLong(data.get(key));
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return defaultValue;
+    }
+
+    private Integer parseInt(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            String text = ControllerSupport.trimToNull(String.valueOf(value));
+            return text == null ? null : Integer.parseInt(text);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private Long parseLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        try {
+            String text = ControllerSupport.trimToNull(String.valueOf(value));
+            return text == null ? null : Long.parseLong(text);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private Object firstNonNull(Object... values) {
+        for (Object value : values) {
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private void updatePaginationControls() {
+        if (pageInfoLabel != null) {
+            pageInfoLabel.setText("Page " + (currentPage + 1) + "/" + Math.max(totalPages, 1) + " - " + totalElements + " students");
+        }
+        if (prevPageButton != null) {
+            prevPageButton.setDisable(currentPage <= 0);
+        }
+        if (nextPageButton != null) {
+            nextPageButton.setDisable(currentPage + 1 >= totalPages);
+        }
     }
 
     private StudentRow toRow(ApplicantResponse applicant) {
