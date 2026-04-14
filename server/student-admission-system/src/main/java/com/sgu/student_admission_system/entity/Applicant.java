@@ -49,7 +49,7 @@ public class Applicant {
     @Column(name = "email", length = 100)
     String email;
 
-    @Column(name = "noi_sinh", length = 45)
+    @Column(name = "noi_sinh", length = 255)
     String birthPlace;
 
     @Column(name = "updated_at")

@@ -9,6 +9,7 @@ import com.sgu.admission_desktop.dto.Applicant.ListApplicantCreationRequest;
 import com.sgu.admission_desktop.util.URLUtil;
 
 import java.util.List;
+import java.util.Map;
 
 public class ApplicantService extends BaseApiService {
 
@@ -17,6 +18,15 @@ public class ApplicantService extends BaseApiService {
                 URLUtil.APPLICANT.GET_ALL,
                 true,
                 new TypeReference<ApiResponse<List<ApplicantResponse>>>() {
+                }
+        );
+    }
+
+    public ApiResponse<Map<String, Object>> getPaginated(int page, int size, String sortBy, String sortDir) {
+        return get(
+                URLUtil.APPLICANT.GET_PAGINATED(page, size, sortBy, sortDir),
+                true,
+                new TypeReference<ApiResponse<Map<String, Object>>>() {
                 }
         );
     }

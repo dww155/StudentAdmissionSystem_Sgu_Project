@@ -140,6 +140,10 @@ public final class URLUtil {
         public static final String CREATE = build("/applicant");
         public static final String CREATE_BULK = build("/applicant/bulk");
 
+        public static String GET_PAGINATED(int page, int size, String sortBy, String sortDir) {
+            return build("/applicant/paginated?page=" + page + "&size=" + size + "&sortBy=" + sortBy + "&sortDir=" + sortDir);
+        }
+
         public static String GET_BY_ID(int id) {
             return build("/applicant/" + id);
         }
