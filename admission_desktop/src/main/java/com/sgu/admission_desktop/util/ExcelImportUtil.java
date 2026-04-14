@@ -3,6 +3,7 @@ package com.sgu.admission_desktop.util;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
@@ -36,6 +37,15 @@ public final class ExcelImportUtil {
             List<ColumnDefinition> columns,
             RowMapper<T> rowMapper
     ) {
+        Optional<Path> filePath = chooseExcelFile(owner, dialogTitle);
+        if (filePath.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(readRows(filePath.get(), columns, rowMapper));
+    }
+
+    public static Optional<Path> chooseExcelFile(Window owner, String dialogTitle) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(dialogTitle);
         fileChooser.getExtensionFilters().add(
@@ -47,7 +57,7 @@ public final class ExcelImportUtil {
             return Optional.empty();
         }
 
-        return Optional.of(readRows(file.toPath(), columns, rowMapper));
+        return Optional.of(file.toPath());
     }
 
     public static <T> List<T> readRows(
@@ -188,7 +198,12 @@ public final class ExcelImportUtil {
             return "";
         }
 
-        if (DateUtil.isCellDateFormatted(cell)) {
+        CellType cellType = cell.getCellType();
+        if (cellType == CellType.FORMULA) {
+            cellType = evaluator.evaluateFormulaCell(cell);
+        }
+
+        if (cellType == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
             return cell.getLocalDateTimeCellValue().toLocalDate().toString();
         }
 
@@ -201,8 +216,8 @@ public final class ExcelImportUtil {
         }
 
         String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
-                .replace("đ", "d")
-                .replace("Đ", "d")
+                .replace("\u0111", "d")
+                .replace("\u0110", "d")
                 .replaceAll("\\p{M}", "")
                 .toLowerCase(Locale.ROOT);
 

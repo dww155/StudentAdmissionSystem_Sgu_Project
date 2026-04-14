@@ -52,25 +52,26 @@ public class ScoresPageController implements Initializable {
     private final ObservableList<ScoreRow> items = FXCollections.observableArrayList();
     private final ExamScoreService examScoreService = new ExamScoreService();
     private final ApplicantService applicantService = new ApplicantService();
+
     private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
+            ExcelImportUtil.ColumnDefinition.optional("stt", "STT"),
+            ExcelImportUtil.ColumnDefinition.optional("registrationNumber", "Registration number", "registration", "ma ts", "mats", "so bao danh", "sbd"),
             ExcelImportUtil.ColumnDefinition.required("cccd", "CCCD"),
-            ExcelImportUtil.ColumnDefinition.required("registrationNumber", "Registration number", "registration", "ma ts", "mats"),
-            ExcelImportUtil.ColumnDefinition.required("conversionCode", "Conversion code", "ma quy doi"),
-            ExcelImportUtil.ColumnDefinition.required("method", "Method", "phuong thuc"),
-            ExcelImportUtil.ColumnDefinition.required("to", "Toan", "math"),
-            ExcelImportUtil.ColumnDefinition.required("li", "Ly", "physics"),
-            ExcelImportUtil.ColumnDefinition.required("ho", "Hoa", "chemistry"),
-            ExcelImportUtil.ColumnDefinition.optional("si", "Sinh", "biology"),
-            ExcelImportUtil.ColumnDefinition.optional("su", "Su", "history"),
-            ExcelImportUtil.ColumnDefinition.optional("di", "Dia", "geography"),
-            ExcelImportUtil.ColumnDefinition.optional("va", "Van", "literature"),
-            ExcelImportUtil.ColumnDefinition.optional("n1Thi", "N1 thi", "n1 exam"),
-            ExcelImportUtil.ColumnDefinition.optional("n1Cc", "N1 cc", "n1 certificate"),
+            ExcelImportUtil.ColumnDefinition.optional("program", "Chương trình", "chuong trinh", "program"),
+            ExcelImportUtil.ColumnDefinition.optional("conversionCode", "Conversion code", "ma quy doi"),
+            ExcelImportUtil.ColumnDefinition.optional("method", "Method", "phuong thuc"),
+            ExcelImportUtil.ColumnDefinition.required("to", "TO", "toan", "math"),
+            ExcelImportUtil.ColumnDefinition.required("li", "LI", "ly", "physics"),
+            ExcelImportUtil.ColumnDefinition.required("ho", "HO", "hoa", "chemistry"),
+            ExcelImportUtil.ColumnDefinition.optional("si", "SI", "sinh", "biology"),
+            ExcelImportUtil.ColumnDefinition.optional("su", "SU", "history"),
+            ExcelImportUtil.ColumnDefinition.optional("di", "DI", "dia", "geography"),
+            ExcelImportUtil.ColumnDefinition.optional("va", "VA", "van", "literature"),
+            ExcelImportUtil.ColumnDefinition.optional("n1Thi", "NN", "ngoai ngu", "foreign language", "n1 thi"),
+            ExcelImportUtil.ColumnDefinition.optional("ktpl", "KTPL", "gdcd", "giao duc cong dan"),
+            ExcelImportUtil.ColumnDefinition.optional("ti", "TI", "tieng trung", "chinese"),
             ExcelImportUtil.ColumnDefinition.optional("cncn", "CNCN"),
             ExcelImportUtil.ColumnDefinition.optional("cnnn", "CNNN"),
-            ExcelImportUtil.ColumnDefinition.optional("ti", "Tieng Trung", "chinese"),
-            ExcelImportUtil.ColumnDefinition.optional("ktpl", "KTPL"),
-            ExcelImportUtil.ColumnDefinition.optional("nl1", "NL1"),
             ExcelImportUtil.ColumnDefinition.optional("nk1", "NK1"),
             ExcelImportUtil.ColumnDefinition.optional("nk2", "NK2")
     );
@@ -158,7 +159,6 @@ public class ScoresPageController implements Initializable {
             payload.put("li", ControllerSupport.parseDecimal(data.get("Ly"), "Ly"));
             payload.put("ho", ControllerSupport.parseDecimal(data.get("Hoa"), "Hoa"));
 
-            // Fill remaining required score slots with 0.
             payload.put("si", BigDecimal.ZERO);
             payload.put("su", BigDecimal.ZERO);
             payload.put("di", BigDecimal.ZERO);
@@ -184,25 +184,29 @@ public class ScoresPageController implements Initializable {
     }
 
     private ExamScoreCreationRequest toImportedExamScoreRequest(Map<String, String> data) {
+        String cccd = requireText(data.get("cccd"), "CCCD");
+        String method = firstNonBlank(data.get("method"), data.get("program"), "THPT");
+        String conversionCode = firstNonBlank(data.get("conversionCode"), data.get("program"), method);
+
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("cccd", data.get("cccd"));
-        payload.put("registrationNumber", data.get("registrationNumber"));
-        payload.put("conversionCode", data.get("conversionCode"));
-        payload.put("method", data.get("method"));
-        payload.put("to", ControllerSupport.parseDecimal(data.get("to"), "Toan"));
-        payload.put("li", ControllerSupport.parseDecimal(data.get("li"), "Ly"));
-        payload.put("ho", ControllerSupport.parseDecimal(data.get("ho"), "Hoa"));
-        payload.put("si", decimalOrZero(data.get("si"), "Sinh"));
-        payload.put("su", decimalOrZero(data.get("su"), "Su"));
-        payload.put("di", decimalOrZero(data.get("di"), "Dia"));
-        payload.put("va", decimalOrZero(data.get("va"), "Van"));
-        payload.put("n1Thi", decimalOrZero(data.get("n1Thi"), "N1 thi"));
-        payload.put("n1Cc", decimalOrZero(data.get("n1Cc"), "N1 cc"));
+        payload.put("cccd", cccd);
+        payload.put("registrationNumber", firstNonBlank(data.get("registrationNumber"), cccd, data.get("stt")));
+        payload.put("conversionCode", conversionCode);
+        payload.put("method", method);
+        payload.put("to", ControllerSupport.parseDecimal(data.get("to"), "TO"));
+        payload.put("li", ControllerSupport.parseDecimal(data.get("li"), "LI"));
+        payload.put("ho", ControllerSupport.parseDecimal(data.get("ho"), "HO"));
+        payload.put("si", decimalOrZero(data.get("si"), "SI"));
+        payload.put("su", decimalOrZero(data.get("su"), "SU"));
+        payload.put("di", decimalOrZero(data.get("di"), "DI"));
+        payload.put("va", decimalOrZero(data.get("va"), "VA"));
+        payload.put("n1Thi", decimalOrZero(data.get("n1Thi"), "NN"));
+        payload.put("n1Cc", BigDecimal.ZERO);
         payload.put("cncn", decimalOrZero(data.get("cncn"), "CNCN"));
         payload.put("cnnn", decimalOrZero(data.get("cnnn"), "CNNN"));
-        payload.put("ti", decimalOrZero(data.get("ti"), "Tieng Trung"));
+        payload.put("ti", decimalOrZero(data.get("ti"), "TI"));
         payload.put("ktpl", decimalOrZero(data.get("ktpl"), "KTPL"));
-        payload.put("nl1", decimalOrZero(data.get("nl1"), "NL1"));
+        payload.put("nl1", BigDecimal.ZERO);
         payload.put("nk1", decimalOrZero(data.get("nk1"), "NK1"));
         payload.put("nk2", decimalOrZero(data.get("nk2"), "NK2"));
         return ControllerSupport.convert(payload, ExamScoreCreationRequest.class);
@@ -239,5 +243,23 @@ public class ScoresPageController implements Initializable {
     private BigDecimal decimalOrZero(String value, String fieldName) {
         String trimmed = ControllerSupport.trimToNull(value);
         return trimmed == null ? BigDecimal.ZERO : ControllerSupport.parseDecimal(trimmed, fieldName);
+    }
+
+    private String requireText(String value, String fieldName) {
+        String trimmed = ControllerSupport.trimToNull(value);
+        if (trimmed == null) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+        return trimmed;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            String trimmed = ControllerSupport.trimToNull(value);
+            if (trimmed != null) {
+                return trimmed;
+            }
+        }
+        return null;
     }
 }

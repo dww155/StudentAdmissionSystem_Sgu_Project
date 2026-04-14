@@ -15,6 +15,7 @@
         <HBox styleClass="toolbar" spacing="10.0">
             <Label text="Lien ket Nganh - To hop mon" styleClass="card-title"/>
             <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Import" onAction="#onImport" styleClass="btn-success"/>
             <Button text="Them lien ket" onAction="#onAddNew" styleClass="btn-primary"/>
         </HBox>
         <TableView fx:id="table" styleClass="table">
