@@ -25,6 +25,7 @@
                 <TableColumn fx:id="colHoTen" text="Full name"/>
                 <TableColumn fx:id="colCccd" text="CCCD"/>
                 <TableColumn fx:id="colNgaySinh" text="Date of birth"/>
+                <TableColumn fx:id="colGioiTinh" text="Gender"/>
                 <TableColumn fx:id="colEmail" text="Email"/>
                 <TableColumn fx:id="colSdt" text="Phone"/>
             </columns>

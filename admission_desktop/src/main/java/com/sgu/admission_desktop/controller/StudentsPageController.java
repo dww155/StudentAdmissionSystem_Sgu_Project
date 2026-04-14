@@ -8,6 +8,7 @@ import com.sgu.admission_desktop.service.ApplicantService;
 import com.sgu.admission_desktop.util.ExcelImportUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
@@ -15,6 +16,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
+import java.nio.file.Path;
+import java.text.Normalizer;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +45,9 @@ public class StudentsPageController implements Initializable {
     private TableColumn<StudentRow, String> colNgaySinh;
 
     @FXML
+    private TableColumn<StudentRow, String> colGioiTinh;
+
+    @FXML
     private TableColumn<StudentRow, String> colEmail;
 
     @FXML
@@ -50,18 +56,22 @@ public class StudentsPageController implements Initializable {
     private final ObservableList<StudentRow> master = FXCollections.observableArrayList();
     private final ObservableList<StudentRow> filtered = FXCollections.observableArrayList();
     private final ApplicantService applicantService = new ApplicantService();
+    private static final int IMPORT_BATCH_SIZE = 500;
+
     private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
-            ExcelImportUtil.ColumnDefinition.required("registrationNumber", "Registration number", "registration", "ma ts", "mats", "so bao danh"),
-            ExcelImportUtil.ColumnDefinition.required("lastName", "Last name", "lastname", "ho lot", "ho"),
-            ExcelImportUtil.ColumnDefinition.required("firstName", "First name", "firstname", "ten"),
-            ExcelImportUtil.ColumnDefinition.required("cccd", "CCCD", "citizenid"),
-            ExcelImportUtil.ColumnDefinition.required("dateOfBirth", "Date of birth", "dob", "ngay sinh"),
-            ExcelImportUtil.ColumnDefinition.required("email", "Email"),
-            ExcelImportUtil.ColumnDefinition.required("phoneNumber", "Phone", "phone", "sdt", "so dien thoai"),
-            ExcelImportUtil.ColumnDefinition.required("gender", "Gender", "gioi tinh"),
-            ExcelImportUtil.ColumnDefinition.required("birthPlace", "Birth place", "noi sinh"),
-            ExcelImportUtil.ColumnDefinition.required("applicantType", "Applicant type", "doi tuong"),
-            ExcelImportUtil.ColumnDefinition.required("region", "Region", "khu vuc")
+            ExcelImportUtil.ColumnDefinition.optional("stt", "STT"),
+            ExcelImportUtil.ColumnDefinition.optional("registrationNumber", "Registration number", "registration", "ma ts", "mats", "so bao danh", "sbd"),
+            ExcelImportUtil.ColumnDefinition.required("cccd", "CCCD", "citizen id"),
+            ExcelImportUtil.ColumnDefinition.optional("fullName", "Họ Tên", "ho ten", "full name", "ten thi sinh"),
+            ExcelImportUtil.ColumnDefinition.optional("lastName", "Last name", "lastname", "ho lot", "ho"),
+            ExcelImportUtil.ColumnDefinition.optional("firstName", "First name", "firstname", "ten"),
+            ExcelImportUtil.ColumnDefinition.required("dateOfBirth", "Ngày sinh", "date of birth", "dob", "ngay sinh"),
+            ExcelImportUtil.ColumnDefinition.optional("email", "Email"),
+            ExcelImportUtil.ColumnDefinition.optional("phoneNumber", "Phone", "phone", "sdt", "so dien thoai"),
+            ExcelImportUtil.ColumnDefinition.required("gender", "Giới tính", "gender", "gioi tinh"),
+            ExcelImportUtil.ColumnDefinition.optional("applicantType", "ĐTƯT", "applicant type", "doi tuong", "dtut", "doi tuong uu tien"),
+            ExcelImportUtil.ColumnDefinition.optional("region", "KVƯT", "region", "khu vuc", "kvut", "khu vuc uu tien"),
+            ExcelImportUtil.ColumnDefinition.required("birthPlace", "Nơi sinh", "birth place", "noi sinh")
     );
 
     @Override
@@ -70,6 +80,7 @@ public class StudentsPageController implements Initializable {
         colHoTen.setCellValueFactory(v -> v.getValue().hoTenProperty());
         colCccd.setCellValueFactory(v -> v.getValue().cccdProperty());
         colNgaySinh.setCellValueFactory(v -> v.getValue().ngaySinhProperty());
+        colGioiTinh.setCellValueFactory(v -> v.getValue().gioiTinhProperty());
         colEmail.setCellValueFactory(v -> v.getValue().emailProperty());
         colSdt.setCellValueFactory(v -> v.getValue().sdtProperty());
 
@@ -110,31 +121,61 @@ public class StudentsPageController implements Initializable {
 
     @FXML
     private void onImport() {
-        try {
-            var importedApplicants = ExcelImportUtil.chooseAndRead(
-                    table.getScene() == null ? null : table.getScene().getWindow(),
-                    "Import applicants",
-                    IMPORT_COLUMNS,
-                    this::toImportedApplicantRequest
-            );
-
-            if (importedApplicants.isEmpty()) {
-                return;
-            }
-
-            List<ApplicantCreationRequest> requests = importedApplicants.get();
-            applicantService.createBulk(
-                    ListApplicantCreationRequest.builder()
-                            .applicantCreationRequestList(requests)
-                            .build()
-            );
-            loadApplicants();
-            ControllerSupport.showInfo("Import applicants", "Imported " + requests.size() + " applicants from Excel.");
-        } catch (IllegalArgumentException e) {
-            ControllerSupport.showError("Import applicants failed", e.getMessage());
-        } catch (Exception e) {
-            ControllerSupport.showError("Import applicants failed", ControllerSupport.extractMessage(e));
+        var selectedFile = ExcelImportUtil.chooseExcelFile(
+                table.getScene() == null ? null : table.getScene().getWindow(),
+                "Import applicants"
+        );
+        if (selectedFile.isEmpty()) {
+            return;
         }
+
+        runApplicantImportInBackground(selectedFile.get());
+    }
+
+    private void runApplicantImportInBackground(Path filePath) {
+        Task<ImportSummary> importTask = new Task<>() {
+            @Override
+            protected ImportSummary call() {
+                List<ApplicantCreationRequest> requests = ExcelImportUtil.readRows(
+                        filePath,
+                        IMPORT_COLUMNS,
+                        StudentsPageController.this::toImportedApplicantRequest
+                );
+
+                int importedCount = 0;
+                for (int from = 0; from < requests.size(); from += IMPORT_BATCH_SIZE) {
+                    int to = Math.min(from + IMPORT_BATCH_SIZE, requests.size());
+                    List<ApplicantCreationRequest> batch = requests.subList(from, to);
+
+                    applicantService.createBulk(
+                            ListApplicantCreationRequest.builder()
+                                    .applicantCreationRequestList(batch)
+                                    .build()
+                    );
+                    importedCount += batch.size();
+                }
+
+                return new ImportSummary(requests.size(), importedCount);
+            }
+        };
+
+        importTask.setOnSucceeded(event -> {
+            ImportSummary summary = importTask.getValue();
+            loadApplicants();
+            ControllerSupport.showInfo(
+                    "Import applicants",
+                    "Imported " + summary.importedCount() + "/" + summary.totalCount() + " applicants from Excel."
+            );
+        });
+
+        importTask.setOnFailed(event -> {
+            Throwable exception = importTask.getException();
+            ControllerSupport.showError("Import applicants failed", ControllerSupport.extractMessage(exception));
+        });
+
+        Thread importThread = new Thread(importTask, "students-import-task");
+        importThread.setDaemon(true);
+        importThread.start();
     }
 
     private void loadApplicants() {
@@ -163,7 +204,7 @@ public class StudentsPageController implements Initializable {
             payload.put("dateOfBirth", ControllerSupport.parseDate(data.get("Date of birth (yyyy-MM-dd)"), "Date of birth"));
             payload.put("email", data.get("Email"));
             payload.put("phoneNumber", data.get("Phone"));
-            payload.put("gender", data.get("Gender"));
+            payload.put("gender", normalizeGenderForApi(data.get("Gender"), "Gender"));
             payload.put("birthPlace", data.get("Birth place"));
             payload.put("applicantType", data.get("Applicant type"));
             payload.put("region", data.get("Region"));
@@ -179,18 +220,21 @@ public class StudentsPageController implements Initializable {
     }
 
     private ApplicantCreationRequest toImportedApplicantRequest(Map<String, String> data) {
+        String cccd = requireText(data.get("cccd"), "CCCD");
+        NameParts nameParts = extractImportedName(data);
+
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("registrationNumber", data.get("registrationNumber"));
-        payload.put("lastName", data.get("lastName"));
-        payload.put("firstName", data.get("firstName"));
-        payload.put("cccd", data.get("cccd"));
-        payload.put("dateOfBirth", ControllerSupport.parseDate(data.get("dateOfBirth"), "Date of birth"));
-        payload.put("email", data.get("email"));
-        payload.put("phoneNumber", data.get("phoneNumber"));
-        payload.put("gender", data.get("gender"));
-        payload.put("birthPlace", data.get("birthPlace"));
-        payload.put("applicantType", data.get("applicantType"));
-        payload.put("region", data.get("region"));
+        payload.put("registrationNumber", firstNonBlank(data.get("registrationNumber"), cccd, data.get("stt")));
+        payload.put("lastName", nameParts.lastName());
+        payload.put("firstName", nameParts.firstName());
+        payload.put("cccd", cccd);
+        payload.put("dateOfBirth", ControllerSupport.parseDate(data.get("dateOfBirth"), "Ngày sinh"));
+        payload.put("email", defaultImportedEmail(data.get("email"), cccd));
+        payload.put("phoneNumber", defaultImportedPhoneNumber(data.get("phoneNumber"), cccd));
+        payload.put("gender", normalizeGenderForApi(data.get("gender"), "Giới tính"));
+        payload.put("birthPlace", requireText(data.get("birthPlace"), "Nơi sinh"));
+        payload.put("applicantType", defaultApplicantType(data.get("applicantType")));
+        payload.put("region", defaultRegion(data.get("region")));
         return ControllerSupport.convert(payload, ApplicantCreationRequest.class);
     }
 
@@ -214,9 +258,124 @@ public class StudentsPageController implements Initializable {
                 ControllerSupport.safeString(data.get("registrationNumber")),
                 fullName,
                 ControllerSupport.safeString(data.get("cccd")),
-                ControllerSupport.safeString(data.get("dateOfBirth")),
+                ControllerSupport.formatDateValue(data.get("dateOfBirth")),
+                formatGenderForDisplay(data.get("gender")),
                 ControllerSupport.safeString(data.get("email")),
                 ControllerSupport.safeString(data.get("phoneNumber"))
         );
+    }
+
+    private NameParts extractImportedName(Map<String, String> data) {
+        String fullName = ControllerSupport.trimToNull(data.get("fullName"));
+        if (fullName != null) {
+            return splitFullName(fullName);
+        }
+
+        String lastName = ControllerSupport.trimToNull(data.get("lastName"));
+        String firstName = ControllerSupport.trimToNull(data.get("firstName"));
+        if (lastName != null && firstName != null) {
+            return new NameParts(lastName, firstName);
+        }
+
+        throw new IllegalArgumentException("Họ Tên or Last name/First name is required.");
+    }
+
+    private NameParts splitFullName(String fullName) {
+        String normalized = fullName.trim().replaceAll("\\s+", " ");
+        int lastSpace = normalized.lastIndexOf(' ');
+        if (lastSpace < 0) {
+            return new NameParts(normalized, normalized);
+        }
+
+        return new NameParts(
+                normalized.substring(0, lastSpace).trim(),
+                normalized.substring(lastSpace + 1).trim()
+        );
+    }
+
+    private String defaultImportedEmail(String value, String cccd) {
+        return firstNonBlank(value, cccd + "@import.local");
+    }
+
+    private String defaultImportedPhoneNumber(String value, String cccd) {
+        return firstNonBlank(value, cccd);
+    }
+
+    private String defaultApplicantType(String value) {
+        return firstNonBlank(value, "0");
+    }
+
+    private String defaultRegion(String value) {
+        return firstNonBlank(value, "0");
+    }
+
+    private String normalizeGenderForApi(String value, String fieldName) {
+        String normalized = normalizeGenderText(value, fieldName);
+        if ("NAM".equals(normalized)) {
+            return "NAM";
+        }
+        if ("NU".equals(normalized)) {
+            return "NU";
+        }
+        throw new IllegalArgumentException(fieldName + " must be Nam or N\u1EEF.");
+    }
+
+    private String formatGenderForDisplay(Object value) {
+        String raw = ControllerSupport.safeString(value);
+        if (raw.isBlank()) {
+            return "";
+        }
+
+        try {
+            String normalized = normalizeGenderText(raw, "Gender");
+            if ("NAM".equals(normalized)) {
+                return "Nam";
+            }
+            if ("NU".equals(normalized)) {
+                return "N\u1EEF";
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Keep original value if backend has an unexpected code.
+        }
+
+        return raw;
+    }
+
+    private String normalizeGenderText(String value, String fieldName) {
+        String trimmed = ControllerSupport.trimToNull(value);
+        if (trimmed == null) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+
+        String normalized = Normalizer.normalize(trimmed, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toUpperCase(Locale.ROOT)
+                .trim();
+
+        return normalized;
+    }
+
+    private String requireText(String value, String fieldName) {
+        String trimmed = ControllerSupport.trimToNull(value);
+        if (trimmed == null) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+        return trimmed;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            String trimmed = ControllerSupport.trimToNull(value);
+            if (trimmed != null) {
+                return trimmed;
+            }
+        }
+        return null;
+    }
+
+    private record NameParts(String lastName, String firstName) {
+    }
+
+    private record ImportSummary(int totalCount, int importedCount) {
     }
 }

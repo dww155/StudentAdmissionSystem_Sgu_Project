@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -44,6 +45,8 @@ public class ApplicantService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public ApplicantResponse createApplicant(ApplicantCreationRequest request) {
+        validateUniqueApplicant(request.getCccd(), request.getPhoneNumber());
+
         Applicant applicantEntity = applicantMapper.toApplicant(request);
 
         Role userRole = roleRepository
@@ -67,6 +70,7 @@ public class ApplicantService {
     @PreAuthorize("hasRole('ADMIN')")
     public List<ApplicantResponse> createApplicants(ListApplicantCreationRequest request) {
         List<ApplicantCreationRequest> applicantCreationRequests = request.getApplicantCreationRequestList();
+//        validateUniqueApplicants(applicantCreationRequests);
 
         Role userRole = roleRepository
                 .findById(RoleConstant.USER_ROLE)
@@ -128,5 +132,38 @@ public class ApplicantService {
                 .orElseThrow(() -> new AppException(ErrorCode.APPLICANT_NOT_FOUND));
 
         applicantRepository.delete(applicant);
+    }
+
+    private void validateUniqueApplicant(String cccd, String phoneNumber) {
+        if (applicantRepository.existsByCccd(cccd)) {
+            throw new AppException(ErrorCode.USERNAME_ALREADY_EXISTS);
+        }
+
+        if (applicantRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
+        }
+    }
+
+    private void validateUniqueApplicants(List<ApplicantCreationRequest> applicantCreationRequests) {
+        Set<String> cccds = new HashSet<>();
+        Set<String> phoneNumbers = new HashSet<>();
+
+        for (ApplicantCreationRequest applicantCreationRequest : applicantCreationRequests) {
+            if (!cccds.add(applicantCreationRequest.getCccd())) {
+                throw new AppException(ErrorCode.USERNAME_ALREADY_EXISTS);
+            }
+
+            if (!phoneNumbers.add(applicantCreationRequest.getPhoneNumber())) {
+                throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
+            }
+        }
+
+        if (applicantRepository.existsByCccdIn(cccds)) {
+            throw new AppException(ErrorCode.USERNAME_ALREADY_EXISTS);
+        }
+
+        if (applicantRepository.existsByPhoneNumberIn(phoneNumbers)) {
+            throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
+        }
     }
 }

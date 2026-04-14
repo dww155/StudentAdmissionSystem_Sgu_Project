@@ -8,14 +8,16 @@ public class StudentRow {
     private final ReadOnlyStringWrapper hoTen = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper cccd = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper ngaySinh = new ReadOnlyStringWrapper();
+    private final ReadOnlyStringWrapper gioiTinh = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper email = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper sdt = new ReadOnlyStringWrapper();
 
-    public StudentRow(String maTs, String hoTen, String cccd, String ngaySinh, String email, String sdt) {
+    public StudentRow(String maTs, String hoTen, String cccd, String ngaySinh, String gioiTinh, String email, String sdt) {
         this.maTs.set(maTs);
         this.hoTen.set(hoTen);
         this.cccd.set(cccd);
         this.ngaySinh.set(ngaySinh);
+        this.gioiTinh.set(gioiTinh);
         this.email.set(email);
         this.sdt.set(sdt);
     }
@@ -48,6 +50,10 @@ public class StudentRow {
         return ngaySinh.getReadOnlyProperty();
     }
 
+    public ReadOnlyStringProperty gioiTinhProperty() {
+        return gioiTinh.getReadOnlyProperty();
+    }
+
     public ReadOnlyStringProperty emailProperty() {
         return email.getReadOnlyProperty();
     }
@@ -56,4 +62,3 @@ public class StudentRow {
         return sdt.getReadOnlyProperty();
     }
 }
-
