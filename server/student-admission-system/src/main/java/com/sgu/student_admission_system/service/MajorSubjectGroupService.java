@@ -1,5 +1,6 @@
 package com.sgu.student_admission_system.service;
 
+import com.sgu.student_admission_system.constant.Batch;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupCreationRequest;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.ListMajorSubjectGroupCreationRequest;
 import com.sgu.student_admission_system.dto.MajorSubjectGroup.MajorSubjectGroupResponse;
@@ -13,6 +14,7 @@ import com.sgu.student_admission_system.mapper.MajorSubjectGroupMapper;
 import com.sgu.student_admission_system.repository.MajorRepository;
 import com.sgu.student_admission_system.repository.MajorSubjectGroupRepository;
 import com.sgu.student_admission_system.repository.SubjectCombinationRepository;
+import jakarta.persistence.EntityManager;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,18 +22,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class MajorSubjectGroupService {
+    static final int JPA_BATCH_SIZE = Batch.JPA_BATCH_SIZE;
 
     MajorSubjectGroupRepository majorSubjectGroupRepository;
     MajorSubjectGroupMapper majorSubjectGroupMapper;
     MajorRepository majorRepository;
     SubjectCombinationRepository subjectCombinationRepository;
+    EntityManager entityManager;
 
     @Transactional
     public MajorSubjectGroupResponse createMajorSubjectGroup(MajorSubjectGroupCreationRequest request) {
@@ -54,34 +64,40 @@ public class MajorSubjectGroupService {
         List<MajorSubjectGroupCreationRequest> majorSubjectGroupCreationRequests =
                 request.getMajorSubjectGroupCreationRequestList();
 
-        List<MajorSubjectGroup> majorSubjectGroups = majorSubjectGroupCreationRequests
-                .stream()
-                .map(majorSubjectGroupCreationRequest -> {
-                    Major major = getMajorByCode(majorSubjectGroupCreationRequest.getMajorCode());
-                    SubjectCombination subjectCombination =
-                            getSubjectCombinationByCode(majorSubjectGroupCreationRequest.getSubjectCombinationCode());
+        if (majorSubjectGroupCreationRequests.isEmpty()) {
+            return List.of();
+        }
 
-                    validateDuplicateMajorSubjectGroup(
-                            majorSubjectGroupCreationRequest.getMajorCode(),
-                            majorSubjectGroupCreationRequest.getSubjectCombinationCode(),
-                            null
-                    );
+        Map<String, Major> majorMap = getMajorMap(majorSubjectGroupCreationRequests);
+        Map<String, SubjectCombination> subjectCombinationMap =
+                getSubjectCombinationMap(majorSubjectGroupCreationRequests);
+        validateDuplicateMajorSubjectGroupsForBulkCreate(majorSubjectGroupCreationRequests);
 
-                    MajorSubjectGroup majorSubjectGroup =
-                            majorSubjectGroupMapper.toMajorSubjectGroup(majorSubjectGroupCreationRequest);
-                    majorSubjectGroup.setMajor(major);
-                    majorSubjectGroup.setSubjectCombination(subjectCombination);
+        List<MajorSubjectGroupResponse> majorSubjectGroupResponses =
+                new ArrayList<>(majorSubjectGroupCreationRequests.size());
 
-                    return majorSubjectGroup;
-                })
-                .toList();
+        for (int i = 0; i < majorSubjectGroupCreationRequests.size(); i++) {
+            MajorSubjectGroupCreationRequest creationRequest = majorSubjectGroupCreationRequests.get(i);
 
-        List<MajorSubjectGroup> savedMajorSubjectGroups = majorSubjectGroupRepository.saveAll(majorSubjectGroups);
+            MajorSubjectGroup majorSubjectGroup = majorSubjectGroupMapper.toMajorSubjectGroup(creationRequest);
+            majorSubjectGroup.setMajor(getMajorFromMap(majorMap, creationRequest.getMajorCode()));
+            majorSubjectGroup.setSubjectCombination(
+                    getSubjectCombinationFromMap(subjectCombinationMap, creationRequest.getSubjectCombinationCode())
+            );
 
-        return savedMajorSubjectGroups
-                .stream()
-                .map(majorSubjectGroupMapper::toMajorSubjectGroupResponse)
-                .toList();
+            MajorSubjectGroup savedMajorSubjectGroup = majorSubjectGroupRepository.save(majorSubjectGroup);
+            majorSubjectGroupResponses.add(majorSubjectGroupMapper.toMajorSubjectGroupResponse(savedMajorSubjectGroup));
+
+            if ((i + 1) % JPA_BATCH_SIZE == 0) {
+                flushAndClear();
+            }
+        }
+
+        if (majorSubjectGroupCreationRequests.size() % JPA_BATCH_SIZE != 0) {
+            flushAndClear();
+        }
+
+        return majorSubjectGroupResponses;
     }
 
     public MajorSubjectGroupResponse getMajorSubjectGroup(Integer id) {
@@ -141,5 +157,97 @@ public class MajorSubjectGroupService {
     private SubjectCombination getSubjectCombinationByCode(String code) {
         return subjectCombinationRepository.findByCode(code)
                 .orElseThrow(() -> new AppException(ErrorCode.SUBJECT_COMBINATION_NOT_FOUND));
+    }
+
+    private Map<String, Major> getMajorMap(List<MajorSubjectGroupCreationRequest> majorSubjectGroupCreationRequests) {
+        Set<String> majorCodes = majorSubjectGroupCreationRequests.stream()
+                .map(MajorSubjectGroupCreationRequest::getMajorCode)
+                .collect(Collectors.toSet());
+
+        return majorRepository.findAllByMajorCodeIn(majorCodes)
+                .stream()
+                .collect(Collectors.toMap(Major::getMajorCode, Function.identity()));
+    }
+
+    private Map<String, SubjectCombination> getSubjectCombinationMap(
+            List<MajorSubjectGroupCreationRequest> majorSubjectGroupCreationRequests
+    ) {
+        Set<String> subjectCombinationCodes = majorSubjectGroupCreationRequests.stream()
+                .map(MajorSubjectGroupCreationRequest::getSubjectCombinationCode)
+                .collect(Collectors.toSet());
+
+        return subjectCombinationRepository.findAllByCodeIn(subjectCombinationCodes)
+                .stream()
+                .collect(Collectors.toMap(SubjectCombination::getCode, Function.identity()));
+    }
+
+    private Major getMajorFromMap(Map<String, Major> majorMap, String majorCode) {
+        Major major = majorMap.get(majorCode);
+        if (major == null) {
+            throw new AppException(ErrorCode.MAJOR_NOT_FOUND);
+        }
+
+        return major;
+    }
+
+    private SubjectCombination getSubjectCombinationFromMap(
+            Map<String, SubjectCombination> subjectCombinationMap,
+            String subjectCombinationCode
+    ) {
+        SubjectCombination subjectCombination = subjectCombinationMap.get(subjectCombinationCode);
+        if (subjectCombination == null) {
+            throw new AppException(ErrorCode.SUBJECT_COMBINATION_NOT_FOUND);
+        }
+
+        return subjectCombination;
+    }
+
+    private void validateDuplicateMajorSubjectGroupsForBulkCreate(
+            List<MajorSubjectGroupCreationRequest> majorSubjectGroupCreationRequests
+    ) {
+        Set<String> requestPairKeys = new HashSet<>();
+        Set<String> majorCodes = new HashSet<>();
+        Set<String> subjectCombinationCodes = new HashSet<>();
+
+        for (MajorSubjectGroupCreationRequest creationRequest : majorSubjectGroupCreationRequests) {
+            majorCodes.add(creationRequest.getMajorCode());
+            subjectCombinationCodes.add(creationRequest.getSubjectCombinationCode());
+
+            String pairKey = buildMajorSubjectGroupKey(
+                    creationRequest.getMajorCode(),
+                    creationRequest.getSubjectCombinationCode()
+            );
+            if (!requestPairKeys.add(pairKey)) {
+                throw new AppException(ErrorCode.MAJOR_SUBJECT_GROUP_ALREADY_EXISTS);
+            }
+        }
+
+        Set<String> existingPairKeys = majorSubjectGroupRepository
+                .findAllByMajor_MajorCodeInAndSubjectCombination_CodeIn(majorCodes, subjectCombinationCodes)
+                .stream()
+                .map(majorSubjectGroup -> buildMajorSubjectGroupKey(
+                        majorSubjectGroup.getMajor().getMajorCode(),
+                        majorSubjectGroup.getSubjectCombination().getCode()
+                ))
+                .collect(Collectors.toSet());
+
+        for (MajorSubjectGroupCreationRequest creationRequest : majorSubjectGroupCreationRequests) {
+            String pairKey = buildMajorSubjectGroupKey(
+                    creationRequest.getMajorCode(),
+                    creationRequest.getSubjectCombinationCode()
+            );
+            if (existingPairKeys.contains(pairKey)) {
+                throw new AppException(ErrorCode.MAJOR_SUBJECT_GROUP_ALREADY_EXISTS);
+            }
+        }
+    }
+
+    private String buildMajorSubjectGroupKey(String majorCode, String subjectCombinationCode) {
+        return majorCode + "#" + subjectCombinationCode;
+    }
+
+    private void flushAndClear() {
+        majorSubjectGroupRepository.flush();
+        entityManager.clear();
     }
 }

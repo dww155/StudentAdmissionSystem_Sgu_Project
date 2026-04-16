@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,5 +20,5 @@ public interface ApplicantRepository extends JpaRepository<Applicant, Integer> {
 
     Optional<Applicant> findByCccd(String cccd);
 
-    List<Applicant> findAllByCccd(Iterable<String> cccds);
+    List<Applicant> findAllByCccdIn(Collection<String> cccds);
 }
