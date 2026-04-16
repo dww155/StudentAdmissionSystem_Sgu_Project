@@ -1,5 +1,6 @@
 package com.sgu.student_admission_system.service;
 
+import com.sgu.student_admission_system.constant.Batch;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreCreationRequest;
 import com.sgu.student_admission_system.dto.ExamScore.ListExamScoreCreationRequest;
 import com.sgu.student_admission_system.dto.ExamScore.ExamScoreResponse;
@@ -13,6 +14,7 @@ import com.sgu.student_admission_system.mapper.ExamScoreMapper;
 import com.sgu.student_admission_system.repository.ApplicantRepository;
 import com.sgu.student_admission_system.repository.ConversionRuleRepository;
 import com.sgu.student_admission_system.repository.ExamScoreRepository;
+import jakarta.persistence.EntityManager;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,19 +23,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class ExamScoreService {
+    static final int JPA_BATCH_SIZE = Batch.JPA_BATCH_SIZE;
 
     ExamScoreRepository examScoreRepository;
     ExamScoreMapper examScoreMapper;
     ApplicantRepository applicantRepository;
     ConversionRuleRepository conversionRuleRepository;
+    EntityManager entityManager;
 
     @Transactional
     public ExamScoreResponse createExamScore(ExamScoreCreationRequest request) {
@@ -59,29 +68,36 @@ public class ExamScoreService {
     public List<ExamScoreResponse> createExamScores(ListExamScoreCreationRequest request) {
         List<ExamScoreCreationRequest> examScoreCreationRequests = request.getExamScoreCreationRequestList();
 
-        List<ExamScore> examScores = examScoreCreationRequests
-                .stream()
-                .map(examScoreCreationRequest -> {
-                    Applicant applicant = getApplicantByCccd(examScoreCreationRequest.getCccd());
+        if (examScoreCreationRequests.isEmpty()) {
+            return List.of();
+        }
 
-                    ExamScore examScore = examScoreMapper.toExamScore(examScoreCreationRequest);
-                    examScore.setApplicant(applicant);
+        Map<String, Applicant> applicantMap = getApplicantMap(examScoreCreationRequests);
+        List<ExamScoreResponse> examScoreResponses = new ArrayList<>(examScoreCreationRequests.size());
 
-                    return examScore;
-                })
-                .toList();
+        for (int i = 0; i < examScoreCreationRequests.size(); i++) {
+            ExamScoreCreationRequest creationRequest = examScoreCreationRequests.get(i);
 
-        List<ExamScore> savedExamScores = examScoreRepository.saveAll(examScores);
+            ExamScore examScore = examScoreMapper.toExamScore(creationRequest);
+            examScore.setApplicant(getApplicantFromMap(applicantMap, creationRequest.getCccd()));
 
-        return savedExamScores
-                .stream()
-                .map(examScore -> {
-                    ExamScoreResponse response = examScoreMapper.toExamScoreResponse(examScore);
-                    response.setStandardizedScore(null);
-                    response.setConversionCode(null);
-                    return response;
-                })
-                .toList();
+            ExamScore savedExamScore = examScoreRepository.save(examScore);
+
+            ExamScoreResponse response = examScoreMapper.toExamScoreResponse(savedExamScore);
+            response.setStandardizedScore(null);
+            response.setConversionCode(null);
+            examScoreResponses.add(response);
+
+            if ((i + 1) % JPA_BATCH_SIZE == 0) {
+                flushAndClear();
+            }
+        }
+
+        if (examScoreCreationRequests.size() % JPA_BATCH_SIZE != 0) {
+            flushAndClear();
+        }
+
+        return examScoreResponses;
     }
 
     public ExamScoreResponse getExamScore(Integer id) {
@@ -135,6 +151,25 @@ public class ExamScoreService {
     private Applicant getApplicantByCccd(String cccd) {
         return applicantRepository.findByCccd(cccd)
                 .orElseThrow(() -> new AppException(ErrorCode.APPLICANT_NOT_FOUND));
+    }
+
+    private Map<String, Applicant> getApplicantMap(List<ExamScoreCreationRequest> examScoreCreationRequests) {
+        Set<String> cccds = examScoreCreationRequests.stream()
+                .map(ExamScoreCreationRequest::getCccd)
+                .collect(Collectors.toSet());
+
+        return applicantRepository.findAllByCccdIn(cccds)
+                .stream()
+                .collect(Collectors.toMap(Applicant::getCccd, Function.identity()));
+    }
+
+    private Applicant getApplicantFromMap(Map<String, Applicant> applicantMap, String cccd) {
+        Applicant applicant = applicantMap.get(cccd);
+        if (applicant == null) {
+            throw new AppException(ErrorCode.APPLICANT_NOT_FOUND);
+        }
+
+        return applicant;
     }
 
     private ConversionRule getConversionRule(String conversionCode) {
@@ -198,5 +233,10 @@ public class ExamScoreService {
             case "NK2" -> examScore.getNk2();
             default -> null;
         };
+    }
+
+    private void flushAndClear() {
+        examScoreRepository.flush();
+        entityManager.clear();
     }
 }

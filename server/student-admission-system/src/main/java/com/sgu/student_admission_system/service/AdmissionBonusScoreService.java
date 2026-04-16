@@ -166,7 +166,7 @@ public class AdmissionBonusScoreService {
                 .map(AdmissionBonusScoreCreationRequest::getCccd)
                 .toList();
 
-        return applicantRepository.findAllByCccd(cccds)
+        return applicantRepository.findAllByCccdIn(cccds)
                 .stream()
                 .collect(Collectors.toMap(Applicant::getCccd, Function.identity()));
     }
@@ -177,7 +177,7 @@ public class AdmissionBonusScoreService {
                 .map(AdmissionBonusScoreCreationRequest::getMajorCode)
                 .toList();
 
-        return majorRepository.findAllByMajorCode(majorCodes)
+        return majorRepository.findAllByMajorCodeIn(majorCodes)
                 .stream()
                 .collect(Collectors.toMap(Major::getMajorCode, Function.identity()));
     }
@@ -190,7 +190,7 @@ public class AdmissionBonusScoreService {
                 .map(AdmissionBonusScoreCreationRequest::getSubjectCombinationCode)
                 .toList();
 
-        return subjectCombinationRepository.findAllByCode(subjectCombinationCodes)
+        return subjectCombinationRepository.findAllByCodeIn(subjectCombinationCodes)
                 .stream()
                 .collect(Collectors.toMap(SubjectCombination::getCode, Function.identity()));
     }
