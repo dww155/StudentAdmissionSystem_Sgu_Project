@@ -57,13 +57,19 @@ public class ApplicantController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir
+            @RequestParam(defaultValue = "desc") String direction
     ) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
 
+        // creating Sort
+        Sort sort;
+        if (direction.equals("desc"))
+            sort = Sort.by(sortBy).descending();
+        else
+            sort = Sort.by(sortBy).ascending();
+
+        // create Pageable from page, size and sort
         Pageable pageable = PageRequest.of(page, size, sort);
+
         Page<ApplicantResponse> response = applicantService.getApplicantsPaginated(pageable);
         return new ApiResponse<>(response, "Get applicants paginated successfully");
     }
