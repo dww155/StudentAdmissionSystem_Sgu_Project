@@ -32,6 +32,6 @@ public class AdmissionPreferenceCreationRequest {
     // OPTIONAL (có thể null)
     String method;
 
-    // OPTIONAL (có thể null)
+    // OPTIONAL (có thể null) 
     String subjectGroup;
 }
