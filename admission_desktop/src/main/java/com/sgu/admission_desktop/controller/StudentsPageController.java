@@ -113,7 +113,57 @@ public class StudentsPageController implements Initializable {
 
     @FXML
     private void onSearch() {
-        applyFilter(searchField.getText());
+        String keyword = ControllerSupport.trimToNull(searchField.getText());
+        if (keyword == null) {
+            loadApplicants(0);
+            return;
+        }
+
+        final int applicantId;
+        try {
+            applicantId = Integer.parseInt(keyword);
+        } catch (NumberFormatException e) {
+            ControllerSupport.showError("Search applicant failed", "Applicant ID must be an integer.");
+            return;
+        }
+
+        Task<ApplicantResponse> searchTask = new Task<>() {
+            @Override
+            protected ApplicantResponse call() {
+                ApiResponse<ApplicantResponse> response = applicantService.getById(applicantId);
+                return response.getData();
+            }
+        };
+
+        searchTask.setOnSucceeded(event -> {
+            ApplicantResponse applicant = searchTask.getValue();
+            if (applicant == null) {
+                master.clear();
+                filtered.clear();
+                currentPage = 0;
+                totalPages = 1;
+                totalElements = 0;
+                updatePaginationControls();
+                ControllerSupport.showInfo("Search applicant", "No applicant found with id " + applicantId + ".");
+                return;
+            }
+
+            master.setAll(toRow(applicant));
+            filtered.setAll(master);
+            currentPage = 0;
+            totalPages = 1;
+            totalElements = 1;
+            updatePaginationControls();
+        });
+
+        searchTask.setOnFailed(event -> ControllerSupport.showError(
+                "Search applicant failed",
+                ControllerSupport.extractMessage(searchTask.getException())
+        ));
+
+        Thread searchThread = new Thread(searchTask, "students-search-task");
+        searchThread.setDaemon(true);
+        searchThread.start();
     }
 
     @FXML
