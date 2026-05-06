@@ -148,6 +148,10 @@ public final class URLUtil {
             return build("/applicant/" + id);
         }
 
+        public static String GET_BY_CCCD(String cccd) {
+            return build("/applicant/cccd=" + cccd);
+        }
+
         public static String UPDATE(int id) {
             return build("/applicant/" + id);
         }
