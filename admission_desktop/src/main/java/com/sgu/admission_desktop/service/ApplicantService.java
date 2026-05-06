@@ -40,6 +40,15 @@ public class ApplicantService extends BaseApiService {
         );
     }
 
+    public ApiResponse<ApplicantResponse> getByCccd(String cccd) {
+        return get(
+                URLUtil.APPLICANT.GET_BY_CCCD(cccd),
+                true,
+                new TypeReference<ApiResponse<ApplicantResponse>>() {
+                }
+        );
+    }
+
     public ApiResponse<ApplicantResponse> create(ApplicantCreationRequest request) {
         return post(
                 URLUtil.APPLICANT.CREATE,

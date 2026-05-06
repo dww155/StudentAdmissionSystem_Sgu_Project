@@ -46,6 +46,12 @@ public class ApplicantController {
         return new ApiResponse<>(response, "Get applicant successfully");
     }
 
+    @GetMapping("/cccd={cccd}")
+    public ApiResponse<ApplicantResponse> getApplicantByCccd(@PathVariable String cccd) {
+        ApplicantResponse response = applicantService.getApplicantByCccd(cccd);
+        return new ApiResponse<>(response, "Get applicant successfully");
+    }
+
     @GetMapping
     public ApiResponse<List<ApplicantResponse>> getAllApplicants() {
         List<ApplicantResponse> response = applicantService.getAllApplicants();

@@ -121,6 +121,13 @@ public class ApplicantService {
         );
     }
 
+    public ApplicantResponse getApplicantByCccd(String cccd) {
+        return applicantMapper.toApplicantResponse(
+                applicantRepository.findByCccd(cccd)
+                        .orElseThrow(() -> new AppException(ErrorCode.APPLICANT_NOT_FOUND))
+        );
+    }
+
     public List<ApplicantResponse> getAllApplicants() {
         return applicantRepository.findAll()
                 .stream()

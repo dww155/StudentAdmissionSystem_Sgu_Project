@@ -119,9 +119,9 @@ public class StudentsPageController implements Initializable {
             return;
         }
 
-        final int applicantId;
+        final String cccd;
         try {
-            applicantId = Integer.parseInt(keyword);
+            cccd = keyword;
         } catch (NumberFormatException e) {
             ControllerSupport.showError("Search applicant failed", "Applicant ID must be an integer.");
             return;
@@ -130,7 +130,7 @@ public class StudentsPageController implements Initializable {
         Task<ApplicantResponse> searchTask = new Task<>() {
             @Override
             protected ApplicantResponse call() {
-                ApiResponse<ApplicantResponse> response = applicantService.getById(applicantId);
+                ApiResponse<ApplicantResponse> response = applicantService.getByCccd(cccd);
                 return response.getData();
             }
         };
@@ -144,7 +144,7 @@ public class StudentsPageController implements Initializable {
                 totalPages = 1;
                 totalElements = 0;
                 updatePaginationControls();
-                ControllerSupport.showInfo("Search applicant", "No applicant found with id " + applicantId + ".");
+                ControllerSupport.showInfo("Search applicant", "No applicant found with id " + cccd + ".");
                 return;
             }
 
