@@ -5,16 +5,14 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 
 public class ScoreRow {
     private final ReadOnlyStringWrapper maTs = new ReadOnlyStringWrapper();
-    private final ReadOnlyStringWrapper hoTen = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper loaiDiem = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper mon1 = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper mon2 = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper mon3 = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper tongDiem = new ReadOnlyStringWrapper();
 
-    public ScoreRow(String maTs, String hoTen, String loaiDiem, String mon1, String mon2, String mon3, String tongDiem) {
+    public ScoreRow(String maTs, String loaiDiem, String mon1, String mon2, String mon3, String tongDiem) {
         this.maTs.set(maTs);
-        this.hoTen.set(hoTen);
         this.loaiDiem.set(loaiDiem);
         this.mon1.set(mon1);
         this.mon2.set(mon2);
@@ -24,10 +22,6 @@ public class ScoreRow {
 
     public ReadOnlyStringProperty maTsProperty() {
         return maTs.getReadOnlyProperty();
-    }
-
-    public ReadOnlyStringProperty hoTenProperty() {
-        return hoTen.getReadOnlyProperty();
     }
 
     public ReadOnlyStringProperty loaiDiemProperty() {
@@ -50,4 +44,3 @@ public class ScoreRow {
         return tongDiem.getReadOnlyProperty();
     }
 }
-

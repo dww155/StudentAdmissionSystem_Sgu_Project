@@ -1,19 +1,20 @@
 package com.sgu.admission_desktop.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.sgu.admission_desktop.dto.AdmissionPreference.AdmissionPreferenceCreationRequest;
 import com.sgu.admission_desktop.dto.AdmissionPreference.AdmissionPreferenceResponse;
 import com.sgu.admission_desktop.dto.AdmissionPreference.ListAdmissionPreferenceCreationRequest;
 import com.sgu.admission_desktop.dto.ApiResponse;
-import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
 import com.sgu.admission_desktop.dto.Major.MajorResponse;
 import com.sgu.admission_desktop.service.AdmissionPreferenceService;
-import com.sgu.admission_desktop.service.ApplicantService;
 import com.sgu.admission_desktop.service.MajorService;
 import com.sgu.admission_desktop.util.ExcelImportUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
@@ -33,9 +34,6 @@ public class WishesPageController implements Initializable {
     private TableColumn<WishRow, String> colMaTs;
 
     @FXML
-    private TableColumn<WishRow, String> colHoTen;
-
-    @FXML
     private TableColumn<WishRow, String> colNguyenVong;
 
     @FXML
@@ -50,10 +48,27 @@ public class WishesPageController implements Initializable {
     @FXML
     private TableColumn<WishRow, String> colTrangThai;
 
+    @FXML
+    private Button prevPageButton;
+
+    @FXML
+    private Button nextPageButton;
+
+    @FXML
+    private Label pageInfoLabel;
+
     private final ObservableList<WishRow> items = FXCollections.observableArrayList();
     private final AdmissionPreferenceService admissionPreferenceService = new AdmissionPreferenceService();
-    private final ApplicantService applicantService = new ApplicantService();
     private final MajorService majorService = new MajorService();
+
+    private static final int PAGE_SIZE = 20;
+    private static final String PAGE_SORT_BY = "id";
+    private static final String PAGE_SORT_DIR = "asc";
+
+    private int currentPage = 0;
+    private int totalPages = 1;
+    private long totalElements = 0;
+
     private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
             ExcelImportUtil.ColumnDefinition.required("cccd", "CCCD"),
             ExcelImportUtil.ColumnDefinition.required("majorCode", "Major code", "ma nganh"),
@@ -63,13 +78,11 @@ public class WishesPageController implements Initializable {
             ExcelImportUtil.ColumnDefinition.optional("subjectGroup", "Subject group", "to hop", "subject combination")
     );
 
-    private Map<String, String> applicantNameByCccd = Map.of();
     private Map<String, String> majorNameByCode = Map.of();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         colMaTs.setCellValueFactory(v -> v.getValue().maTsProperty());
-        colHoTen.setCellValueFactory(v -> v.getValue().hoTenProperty());
         colNguyenVong.setCellValueFactory(v -> v.getValue().nguyenVongProperty());
         colTenNganh.setCellValueFactory(v -> v.getValue().tenNganhProperty());
         colMaToHop.setCellValueFactory(v -> v.getValue().maToHopProperty());
@@ -79,22 +92,58 @@ public class WishesPageController implements Initializable {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(items);
 
-        loadWishes();
+        loadWishes(0);
     }
 
-    private void loadWishes() {
+    @FXML
+    private void onPreviousPage() {
+        if (currentPage <= 0) {
+            return;
+        }
+        loadWishes(currentPage - 1);
+    }
+
+    @FXML
+    private void onNextPage() {
+        if (currentPage + 1 >= totalPages) {
+            return;
+        }
+        loadWishes(currentPage + 1);
+    }
+
+    private void loadWishes(int requestedPage) {
         try {
-            applicantNameByCccd = loadApplicantNames();
             majorNameByCode = loadMajorNames();
 
-            ApiResponse<List<AdmissionPreferenceResponse>> response = admissionPreferenceService.getAll();
-            List<AdmissionPreferenceResponse> wishes = response.getData() == null ? List.of() : response.getData();
+            ApiResponse<Map<String, Object>> response = admissionPreferenceService.getPaginated(
+                    Math.max(requestedPage, 0),
+                    PAGE_SIZE,
+                    PAGE_SORT_BY,
+                    PAGE_SORT_DIR
+            );
+
+            Map<String, Object> pageData = response.getData() == null ? Map.of() : response.getData();
+            List<AdmissionPreferenceResponse> wishes = extractWishes(pageData);
 
             items.setAll(wishes.stream()
                     .map(this::toRow)
                     .toList());
+
+            currentPage = Math.max(extractInt(pageData, requestedPage, "pageNumber", "number", "page"), 0);
+            totalPages = Math.max(extractInt(pageData, 1, "totalPages"), 1);
+            totalElements = Math.max(extractLong(pageData, wishes.size(), "totalElements"), wishes.size());
+
+            if (currentPage >= totalPages) {
+                currentPage = totalPages - 1;
+            }
+
+            updatePaginationControls();
         } catch (Exception e) {
             items.clear();
+            currentPage = 0;
+            totalPages = 1;
+            totalElements = 0;
+            updatePaginationControls();
             ControllerSupport.showError("Load wishes failed", ControllerSupport.extractMessage(e));
         }
     }
@@ -135,7 +184,7 @@ public class WishesPageController implements Initializable {
                             .admissionPreferenceCreationRequestList(requests)
                             .build()
             );
-            loadWishes();
+            loadWishes(currentPage);
             ControllerSupport.showInfo("Import wishes", "Imported " + requests.size() + " wishes from Excel.");
         } catch (IllegalArgumentException e) {
             ControllerSupport.showError("Import wishes failed", e.getMessage());
@@ -156,7 +205,7 @@ public class WishesPageController implements Initializable {
 
             AdmissionPreferenceCreationRequest request = ControllerSupport.convert(payload, AdmissionPreferenceCreationRequest.class);
             admissionPreferenceService.create(request);
-            loadWishes();
+            loadWishes(currentPage);
         } catch (IllegalArgumentException e) {
             ControllerSupport.showError("Invalid wish", e.getMessage());
         } catch (Exception e) {
@@ -175,19 +224,6 @@ public class WishesPageController implements Initializable {
         return ControllerSupport.convert(payload, AdmissionPreferenceCreationRequest.class);
     }
 
-    private Map<String, String> loadApplicantNames() {
-        ApiResponse<List<ApplicantResponse>> response = applicantService.getAll();
-        List<ApplicantResponse> applicants = response.getData() == null ? List.of() : response.getData();
-
-        return applicants.stream()
-                .map(ControllerSupport::toMap)
-                .collect(Collectors.toMap(
-                        item -> ControllerSupport.safeString(item.get("cccd")),
-                        item -> (ControllerSupport.safeString(item.get("lastName")) + " " + ControllerSupport.safeString(item.get("firstName"))).trim(),
-                        (left, right) -> left
-                ));
-    }
-
     private Map<String, String> loadMajorNames() {
         ApiResponse<List<MajorResponse>> response = majorService.getAll();
         List<MajorResponse> majors = response.getData() == null ? List.of() : response.getData();
@@ -201,6 +237,94 @@ public class WishesPageController implements Initializable {
                 ));
     }
 
+    private List<AdmissionPreferenceResponse> extractWishes(Map<String, Object> pageData) {
+        Object content = firstNonNull(
+                pageData.get("content"),
+                pageData.get("items"),
+                pageData.get("records")
+        );
+        if (content == null) {
+            return List.of();
+        }
+
+        return ControllerSupport.convertList(
+                content,
+                new TypeReference<List<AdmissionPreferenceResponse>>() {
+                }
+        );
+    }
+
+    private int extractInt(Map<String, Object> data, int defaultValue, String... keys) {
+        for (String key : keys) {
+            Integer parsed = parseInt(data.get(key));
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return defaultValue;
+    }
+
+    private long extractLong(Map<String, Object> data, long defaultValue, String... keys) {
+        for (String key : keys) {
+            Long parsed = parseLong(data.get(key));
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return defaultValue;
+    }
+
+    private Integer parseInt(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            String text = ControllerSupport.trimToNull(String.valueOf(value));
+            return text == null ? null : Integer.parseInt(text);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private Long parseLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        try {
+            String text = ControllerSupport.trimToNull(String.valueOf(value));
+            return text == null ? null : Long.parseLong(text);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private Object firstNonNull(Object... values) {
+        for (Object value : values) {
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private void updatePaginationControls() {
+        if (pageInfoLabel != null) {
+            pageInfoLabel.setText("Page " + (currentPage + 1) + "/" + Math.max(totalPages, 1) + " - " + totalElements + " wishes");
+        }
+        if (prevPageButton != null) {
+            prevPageButton.setDisable(currentPage <= 0);
+        }
+        if (nextPageButton != null) {
+            nextPageButton.setDisable(currentPage + 1 >= totalPages);
+        }
+    }
+
     private WishRow toRow(AdmissionPreferenceResponse wish) {
         Map<String, Object> data = ControllerSupport.toMap(wish);
         String cccd = ControllerSupport.safeString(data.get("cccd"));
@@ -209,7 +333,6 @@ public class WishesPageController implements Initializable {
 
         return new WishRow(
                 cccd,
-                applicantNameByCccd.getOrDefault(cccd, cccd),
                 priorityOrder,
                 majorNameByCode.getOrDefault(majorCode, majorCode),
                 ControllerSupport.safeString(data.get("subjectGroup")),

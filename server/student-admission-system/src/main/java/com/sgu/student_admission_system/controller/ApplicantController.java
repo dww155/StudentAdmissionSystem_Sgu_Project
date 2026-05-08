@@ -63,7 +63,7 @@ public class ApplicantController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction
+            @RequestParam(defaultValue = "asc") String direction
     ) {
 
         // creating Sort

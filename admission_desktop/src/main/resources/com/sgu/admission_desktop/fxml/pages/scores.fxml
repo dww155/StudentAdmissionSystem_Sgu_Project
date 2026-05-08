@@ -10,18 +10,24 @@
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.sgu.admission_desktop.controller.ScoresPageController"
-      styleClass="page" spacing="14.0">
-    <VBox styleClass="card" spacing="12.0">
+      styleClass="page"
+      spacing="14.0"
+      VBox.vgrow="ALWAYS">
+    <VBox styleClass="card"
+          spacing="12.0"
+          VBox.vgrow="ALWAYS">
         <HBox styleClass="toolbar" spacing="10.0">
             <Label text="Quản lý điểm thí sinh" styleClass="card-title"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Import" onAction="#onImport" styleClass="btn-success"/>
             <Button text="Thêm mới" onAction="#onAddNew" styleClass="btn-primary"/>
         </HBox>
-        <TableView fx:id="table" styleClass="table">
+
+        <TableView fx:id="table"
+                   styleClass="table"
+                   VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colMaTs" text="Mã TS"/>
-                <TableColumn fx:id="colHoTen" text="Họ tên"/>
                 <TableColumn fx:id="colLoaiDiem" text="Loại điểm"/>
                 <TableColumn fx:id="colMon1" text="Môn 1"/>
                 <TableColumn fx:id="colMon2" text="Môn 2"/>
@@ -29,5 +35,23 @@
                 <TableColumn fx:id="colTongDiem" text="Tổng"/>
             </columns>
         </TableView>
+
+        <HBox spacing="8.0" styleClass="toolbar">
+            <Label fx:id="pageInfoLabel"
+                   styleClass="muted"
+                   text="Page 1/1 - 0 scores"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button fx:id="prevPageButton"
+                    text="Previous"
+                    onAction="#onPreviousPage"
+                    styleClass="icon-btn"/>
+
+            <Button fx:id="nextPageButton"
+                    text="Next"
+                    onAction="#onNextPage"
+                    styleClass="icon-btn"/>
+        </HBox>
     </VBox>
 </VBox>

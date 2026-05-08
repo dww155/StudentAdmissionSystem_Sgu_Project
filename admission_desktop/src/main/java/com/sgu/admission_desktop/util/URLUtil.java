@@ -96,6 +96,10 @@ public final class URLUtil {
         public static final String CREATE = build("/exam-scores");
         public static final String CREATE_BULK = build("/exam-scores/bulk");
 
+        public static String GET_PAGINATED(int page, int size, String sortBy, String sortDir) {
+            return build("/exam-scores/paginated?page=" + page + "&size=" + size + "&sortBy=" + sortBy + "&sortDir=" + sortDir);
+        }
+
         public static String GET_BY_ID(int id) {
             return build("/exam-scores/" + id);
         }
@@ -170,6 +174,10 @@ public final class URLUtil {
         public static final String CREATE = build("/admission-preferences");
         public static final String CREATE_BULK = build("/admission-preferences/bulk");
 
+        public static String GET_PAGINATED(int page, int size, String sortBy, String sortDir) {
+            return build("/admission-preferences/paginated?page=" + page + "&size=" + size + "&sortBy=" + sortBy + "&sortDir=" + sortDir);
+        }
+
         public static String GET_BY_ID(int id) {
             return build("/admission-preferences/" + id);
         }
@@ -191,6 +199,10 @@ public final class URLUtil {
         public static final String GET_ALL = build("/admission-bonus-scores");
         public static final String CREATE = build("/admission-bonus-scores");
         public static final String CREATE_BULK = build("/admission-bonus-scores/bulk");
+
+        public static String GET_PAGINATED(int page, int size, String sortBy, String sortDir) {
+            return build("/admission-bonus-scores/paginated?page=" + page + "&size=" + size + "&sortBy=" + sortBy + "&sortDir=" + sortDir);
+        }
 
         public static String GET_BY_ID(int id) {
             return build("/admission-bonus-scores/" + id);

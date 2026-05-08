@@ -238,6 +238,7 @@
     -fx-border-color: #eef2f7;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
+    -fx-pref-height: 500px;
 }
 .table .column-header-background {
     -fx-background-color: #f9fafb;

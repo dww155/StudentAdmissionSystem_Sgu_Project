@@ -5,16 +5,14 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 
 public class WishRow {
     private final ReadOnlyStringWrapper maTs = new ReadOnlyStringWrapper();
-    private final ReadOnlyStringWrapper hoTen = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper nguyenVong = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper tenNganh = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper maToHop = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper tongDiem = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper trangThai = new ReadOnlyStringWrapper();
 
-    public WishRow(String maTs, String hoTen, int nguyenVong, String tenNganh, String maToHop, String tongDiem, String trangThai) {
+    public WishRow(String maTs, int nguyenVong, String tenNganh, String maToHop, String tongDiem, String trangThai) {
         this.maTs.set(maTs);
-        this.hoTen.set(hoTen);
         this.nguyenVong.set("NV" + nguyenVong);
         this.tenNganh.set(tenNganh);
         this.maToHop.set(maToHop);
@@ -24,10 +22,6 @@ public class WishRow {
 
     public ReadOnlyStringProperty maTsProperty() {
         return maTs.getReadOnlyProperty();
-    }
-
-    public ReadOnlyStringProperty hoTenProperty() {
-        return hoTen.getReadOnlyProperty();
     }
 
     public ReadOnlyStringProperty nguyenVongProperty() {
@@ -50,4 +44,3 @@ public class WishRow {
         return trangThai.getReadOnlyProperty();
     }
 }
-

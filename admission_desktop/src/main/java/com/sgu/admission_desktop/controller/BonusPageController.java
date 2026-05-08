@@ -1,17 +1,18 @@
 package com.sgu.admission_desktop.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.sgu.admission_desktop.dto.AdmissionBonusScore.AdmissionBonusScoreCreationRequest;
 import com.sgu.admission_desktop.dto.AdmissionBonusScore.AdmissionBonusScoreResponse;
 import com.sgu.admission_desktop.dto.AdmissionBonusScore.ListAdmissionBonusScoreCreationRequest;
 import com.sgu.admission_desktop.dto.ApiResponse;
-import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
 import com.sgu.admission_desktop.service.AdmissionBonusScoreService;
-import com.sgu.admission_desktop.service.ApplicantService;
 import com.sgu.admission_desktop.util.ExcelImportUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
@@ -20,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class BonusPageController implements Initializable {
 
@@ -31,17 +31,31 @@ public class BonusPageController implements Initializable {
     private TableColumn<BonusRow, String> colMaTs;
 
     @FXML
-    private TableColumn<BonusRow, String> colHoTen;
-
-    @FXML
     private TableColumn<BonusRow, String> colDiemCong;
 
     @FXML
     private TableColumn<BonusRow, String> colLyDo;
 
+    @FXML
+    private Button prevPageButton;
+
+    @FXML
+    private Button nextPageButton;
+
+    @FXML
+    private Label pageInfoLabel;
+
     private final ObservableList<BonusRow> items = FXCollections.observableArrayList();
     private final AdmissionBonusScoreService admissionBonusScoreService = new AdmissionBonusScoreService();
-    private final ApplicantService applicantService = new ApplicantService();
+
+    private static final int PAGE_SIZE = 20;
+    private static final String PAGE_SORT_BY = "id";
+    private static final String PAGE_SORT_DIR = "asc";
+
+    private int currentPage = 0;
+    private int totalPages = 1;
+    private long totalElements = 0;
+
     private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
             ExcelImportUtil.ColumnDefinition.required("cccd", "CCCD"),
             ExcelImportUtil.ColumnDefinition.required("majorCode", "Major code", "ma nganh"),
@@ -54,33 +68,65 @@ public class BonusPageController implements Initializable {
             ExcelImportUtil.ColumnDefinition.optional("note", "Note", "ly do")
     );
 
-    private Map<String, String> applicantNameByCccd = Map.of();
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         colMaTs.setCellValueFactory(v -> v.getValue().maTsProperty());
-        colHoTen.setCellValueFactory(v -> v.getValue().hoTenProperty());
         colDiemCong.setCellValueFactory(v -> v.getValue().diemCongProperty());
         colLyDo.setCellValueFactory(v -> v.getValue().lyDoProperty());
 
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(items);
 
-        loadBonusScores();
+        loadBonusScores(0);
     }
 
-    private void loadBonusScores() {
-        try {
-            applicantNameByCccd = loadApplicantNames();
+    @FXML
+    private void onPreviousPage() {
+        if (currentPage <= 0) {
+            return;
+        }
+        loadBonusScores(currentPage - 1);
+    }
 
-            ApiResponse<List<AdmissionBonusScoreResponse>> response = admissionBonusScoreService.getAll();
-            List<AdmissionBonusScoreResponse> bonusScores = response.getData() == null ? List.of() : response.getData();
+    @FXML
+    private void onNextPage() {
+        if (currentPage + 1 >= totalPages) {
+            return;
+        }
+        loadBonusScores(currentPage + 1);
+    }
+
+    private void loadBonusScores(int requestedPage) {
+        try {
+            ApiResponse<Map<String, Object>> response = admissionBonusScoreService.getPaginated(
+                    Math.max(requestedPage, 0),
+                    PAGE_SIZE,
+                    PAGE_SORT_BY,
+                    PAGE_SORT_DIR
+            );
+
+            Map<String, Object> pageData = response.getData() == null ? Map.of() : response.getData();
+            List<AdmissionBonusScoreResponse> bonusScores = extractBonusScores(pageData);
 
             items.setAll(bonusScores.stream()
                     .map(this::toRow)
                     .toList());
+
+            currentPage = Math.max(extractInt(pageData, requestedPage, "pageNumber", "number", "page"), 0);
+            totalPages = Math.max(extractInt(pageData, 1, "totalPages"), 1);
+            totalElements = Math.max(extractLong(pageData, bonusScores.size(), "totalElements"), bonusScores.size());
+
+            if (currentPage >= totalPages) {
+                currentPage = totalPages - 1;
+            }
+
+            updatePaginationControls();
         } catch (Exception e) {
             items.clear();
+            currentPage = 0;
+            totalPages = 1;
+            totalElements = 0;
+            updatePaginationControls();
             ControllerSupport.showError("Load bonus scores failed", ControllerSupport.extractMessage(e));
         }
     }
@@ -124,7 +170,7 @@ public class BonusPageController implements Initializable {
                             .admissionBonusScoreCreationRequestList(requests)
                             .build()
             );
-            loadBonusScores();
+            loadBonusScores(currentPage);
             ControllerSupport.showInfo(
                     "Import bonus scores",
                     "Imported " + requests.size() + " bonus scores from Excel."
@@ -151,7 +197,7 @@ public class BonusPageController implements Initializable {
 
             AdmissionBonusScoreCreationRequest request = ControllerSupport.convert(payload, AdmissionBonusScoreCreationRequest.class);
             admissionBonusScoreService.create(request);
-            loadBonusScores();
+            loadBonusScores(currentPage);
         } catch (IllegalArgumentException e) {
             ControllerSupport.showError("Invalid bonus score", e.getMessage());
         } catch (Exception e) {
@@ -173,25 +219,98 @@ public class BonusPageController implements Initializable {
         return ControllerSupport.convert(payload, AdmissionBonusScoreCreationRequest.class);
     }
 
-    private Map<String, String> loadApplicantNames() {
-        ApiResponse<List<ApplicantResponse>> response = applicantService.getAll();
-        List<ApplicantResponse> applicants = response.getData() == null ? List.of() : response.getData();
+    private List<AdmissionBonusScoreResponse> extractBonusScores(Map<String, Object> pageData) {
+        Object content = firstNonNull(
+                pageData.get("content"),
+                pageData.get("items"),
+                pageData.get("records")
+        );
+        if (content == null) {
+            return List.of();
+        }
 
-        return applicants.stream()
-                .map(ControllerSupport::toMap)
-                .collect(Collectors.toMap(
-                        item -> ControllerSupport.safeString(item.get("cccd")),
-                        item -> (ControllerSupport.safeString(item.get("lastName")) + " " + ControllerSupport.safeString(item.get("firstName"))).trim(),
-                        (left, right) -> left
-                ));
+        return ControllerSupport.convertList(
+                content,
+                new TypeReference<List<AdmissionBonusScoreResponse>>() {
+                }
+        );
+    }
+
+    private int extractInt(Map<String, Object> data, int defaultValue, String... keys) {
+        for (String key : keys) {
+            Integer parsed = parseInt(data.get(key));
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return defaultValue;
+    }
+
+    private long extractLong(Map<String, Object> data, long defaultValue, String... keys) {
+        for (String key : keys) {
+            Long parsed = parseLong(data.get(key));
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return defaultValue;
+    }
+
+    private Integer parseInt(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            String text = ControllerSupport.trimToNull(String.valueOf(value));
+            return text == null ? null : Integer.parseInt(text);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private Long parseLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        try {
+            String text = ControllerSupport.trimToNull(String.valueOf(value));
+            return text == null ? null : Long.parseLong(text);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private Object firstNonNull(Object... values) {
+        for (Object value : values) {
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private void updatePaginationControls() {
+        if (pageInfoLabel != null) {
+            pageInfoLabel.setText("Page " + (currentPage + 1) + "/" + Math.max(totalPages, 1) + " - " + totalElements + " bonus records");
+        }
+        if (prevPageButton != null) {
+            prevPageButton.setDisable(currentPage <= 0);
+        }
+        if (nextPageButton != null) {
+            nextPageButton.setDisable(currentPage + 1 >= totalPages);
+        }
     }
 
     private BonusRow toRow(AdmissionBonusScoreResponse bonusScore) {
         Map<String, Object> data = ControllerSupport.toMap(bonusScore);
-        String cccd = ControllerSupport.safeString(data.get("cccd"));
         return new BonusRow(
-                cccd,
-                applicantNameByCccd.getOrDefault(cccd, cccd),
+                ControllerSupport.safeString(data.get("cccd")),
                 ControllerSupport.safeString(data.get("bonusScore")),
                 ControllerSupport.safeString(data.get("note"))
         );

@@ -10,6 +10,10 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,6 +52,30 @@ public class AdmissionPreferenceController {
     public ApiResponse<List<AdmissionPreferenceResponse>> getAllAdmissionPreferences() {
         List<AdmissionPreferenceResponse> response = admissionPreferenceService.getAllAdmissionPreferences();
         return new ApiResponse<>(response, "Get all admission preferences successfully");
+    }
+
+    @GetMapping("/paginated")
+    public ApiResponse<Page<AdmissionPreferenceResponse>> getAdmissionPreferencesPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(required = false) String sortDir,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+        String resolvedDirection = (sortDir != null && !sortDir.isBlank()) ? sortDir : direction;
+
+        Sort sort;
+        if ("desc".equalsIgnoreCase(resolvedDirection)) {
+            sort = Sort.by(sortBy).descending();
+        } else {
+            sort = Sort.by(sortBy).ascending();
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<AdmissionPreferenceResponse> response = admissionPreferenceService
+                .getAdmissionPreferencesPaginated(pageable);
+        return new ApiResponse<>(response, "Get admission preferences paginated successfully");
     }
 
     @PutMapping("/{id}")
