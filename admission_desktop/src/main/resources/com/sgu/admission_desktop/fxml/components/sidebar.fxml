@@ -13,7 +13,7 @@
       prefWidth="260.0" styleClass="sidebar">
     <VBox styleClass="sidebar-header">
         <Label text="HỆ THỐNG TUYỂN SINH" styleClass="sidebar-title"/>
-        <Label text="Trường Đại Học Sài Gòn" styleClass="sidebar-subtitle"/>
+        <Label text="Trường Đại học Sài Gòn" styleClass="sidebar-subtitle"/>
     </VBox>
 
     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="sidebar-scroll">
@@ -30,7 +30,9 @@
                 <Button text="Ngành tuyển sinh" onAction="#onNav" userData="majors" styleClass="sidebar-item"/>
                 <Button text="Tổ hợp môn" onAction="#onNav" userData="subjects" styleClass="sidebar-item"/>
                 <Button text="Ngành - Tổ hợp" onAction="#onNav" userData="major-subjects" styleClass="sidebar-item"/>
-                <Button text="Điểm thí sinh" onAction="#onNav" userData="scores" styleClass="sidebar-item"/>
+                <Button text="Điểm THPT" onAction="#onNav" userData="scores" styleClass="sidebar-item"/>
+                <Button text="Kết quả VSAT" onAction="#onNav" userData="vsat-results" styleClass="sidebar-item"/>
+                <Button text="Chứng chỉ tiếng Anh" onAction="#onNav" userData="english-certifications" styleClass="sidebar-item"/>
                 <Button text="Điểm cộng" onAction="#onNav" userData="bonus" styleClass="sidebar-item"/>
                 <Button text="Nguyện vọng" onAction="#onNav" userData="wishes" styleClass="sidebar-item"/>
                 <Button text="Bảng quy đổi" onAction="#onNav" userData="conversion" styleClass="sidebar-item"/>
@@ -52,4 +54,3 @@
         <Button text="Đổi mật khẩu" onAction="#onChangePassword" styleClass="sidebar-footer-btn"/>
     </VBox>
 </VBox>
-

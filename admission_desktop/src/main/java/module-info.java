@@ -33,9 +33,11 @@ module com.sgu.admission_desktop {
     opens com.sgu.admission_desktop.dto.AdmissionPreference to com.fasterxml.jackson.databind;
     opens com.sgu.admission_desktop.dto.Applicant to com.fasterxml.jackson.databind;
     opens com.sgu.admission_desktop.dto.ConversionRule to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.EnglishCertification to com.fasterxml.jackson.databind;
     opens com.sgu.admission_desktop.dto.ExamScore to com.fasterxml.jackson.databind;
     opens com.sgu.admission_desktop.dto.Major to com.fasterxml.jackson.databind;
     opens com.sgu.admission_desktop.dto.MajorSubjectGroup to com.fasterxml.jackson.databind;
     opens com.sgu.admission_desktop.dto.SubjectCombination to com.fasterxml.jackson.databind;
+    opens com.sgu.admission_desktop.dto.VsatResult to com.fasterxml.jackson.databind;
     opens com.sgu.admission_desktop.dto.user to com.fasterxml.jackson.databind;
 }
