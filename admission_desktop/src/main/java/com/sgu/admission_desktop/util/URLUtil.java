@@ -143,6 +143,36 @@ public final class URLUtil {
         }
     }
 
+    // ===================== ENGLISH CERTIFICATIONS =====================
+    public static final class ENGLISH_CERTIFICATION {
+        private ENGLISH_CERTIFICATION() {
+        }
+
+        public static final String GET_ALL = build("/english-certifications");
+        public static final String CREATE = build("/english-certifications");
+        public static final String CREATE_BULK = build("/english-certifications/bulk");
+
+        public static String GET_PAGINATED(int page, int size, String sortBy, String sortDir) {
+            return build("/english-certifications/paginated?page=" + page + "&size=" + size + "&sortBy=" + sortBy + "&sortDir=" + sortDir);
+        }
+
+        public static String GET_BY_ID(long id) {
+            return build("/english-certifications/" + id);
+        }
+
+        public static String GET_BY_CCCD(String cccd) {
+            return build("/english-certifications/cccd=" + cccd);
+        }
+
+        public static String UPDATE(long id) {
+            return build("/english-certifications/" + id);
+        }
+
+        public static String DELETE(long id) {
+            return build("/english-certifications/" + id);
+        }
+    }
+
     // ===================== CONVERSION RULES =====================
     public static final class CONVERSION_RULE {
         private CONVERSION_RULE() {
