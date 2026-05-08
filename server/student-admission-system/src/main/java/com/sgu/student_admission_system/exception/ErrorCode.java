@@ -108,6 +108,14 @@ public enum ErrorCode {
     INVALID_TEN_DVTCTDL("Invalid ten dvtctdl", 1962, HttpStatus.BAD_REQUEST),
     INVALID_VSAT_RESULT_LIST("Invalid vsat result list", 1963, HttpStatus.BAD_REQUEST),
 
+    ENGLISH_CERTIFICATION_NOT_FOUND("English certification not found", 1971, HttpStatus.NOT_FOUND),
+    ENGLISH_CERTIFICATION_ALREADY_EXISTS("English certification already exists", 1972, HttpStatus.BAD_REQUEST),
+    INVALID_CERTIFICATION_NAME("Invalid certification name", 1973, HttpStatus.BAD_REQUEST),
+    INVALID_CERTIFICATION_SCORE("Invalid certification score", 1974, HttpStatus.BAD_REQUEST),
+    INVALID_ENGLISH_CONVERSION_SCORE("Invalid english conversion score", 1975, HttpStatus.BAD_REQUEST),
+    INVALID_ENGLISH_BONUS_SCORE("Invalid english bonus score", 1976, HttpStatus.BAD_REQUEST),
+    INVALID_ENGLISH_CERTIFICATION_LIST("Invalid english certification list", 1977, HttpStatus.BAD_REQUEST),
+
     INVALID_APPLICANT_ID("Invalid applicant", 2001, HttpStatus.BAD_REQUEST),
     INVALID_MAJOR_ID("Invalid major", 2002, HttpStatus.BAD_REQUEST),
     INVALID_PRIORITY_ORDER("Invalid preference priority order", 2003, HttpStatus.BAD_REQUEST),

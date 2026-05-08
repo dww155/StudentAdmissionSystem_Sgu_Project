@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -41,7 +42,7 @@ public class VsatResultCreationRequest {
 
     @NotNull(message = "INVALID_DIEM")
     @DecimalMin(value = "0.0", message = "INVALID_DIEM")
-    Double diem;
+    BigDecimal diem;
 
     @NotNull(message = "INVALID_THANG_DIEM")
     @Min(value = 1, message = "INVALID_THANG_DIEM")

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -43,7 +44,7 @@ public class VsatResult {
     String tenMonThi;
 
     @Column(name = "diem")
-    Double diem;
+    BigDecimal diem;
 
     @Column(name = "thang_diem")
     Integer thangDiem;
