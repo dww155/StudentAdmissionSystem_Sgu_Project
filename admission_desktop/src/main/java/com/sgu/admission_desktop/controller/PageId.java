@@ -6,7 +6,14 @@ public enum PageId {
     MAJORS("majors", "Ngành tuyển sinh", "Quản lý danh sách ngành đào tạo", "pages/majors.fxml"),
     SUBJECTS("subjects", "Tổ hợp môn", "Quản lý tổ hợp môn xét tuyển", "pages/subjects.fxml"),
     MAJOR_SUBJECTS("major-subjects", "Ngành - Tổ hợp", "Liên kết ngành với tổ hợp môn", "pages/major-subjects.fxml"),
-    SCORES("scores", "Điểm thí sinh", "Quản lý điểm THPT, VSAT, ĐGNL", "pages/scores.fxml"),
+    SCORES("scores", "Điểm THPT", "Quản lý điểm thi THPT", "pages/scores.fxml"),
+    VSAT_RESULTS("vsat-results", "Kết quả VSAT", "Quản lý kết quả thi VSAT", "pages/vsat-results.fxml"),
+    ENGLISH_CERTIFICATIONS(
+            "english-certifications",
+            "Chứng chỉ tiếng Anh",
+            "Quản lý chứng chỉ tiếng Anh và điểm quy đổi",
+            "pages/english-certifications.fxml"
+    ),
     BONUS("bonus", "Điểm cộng", "Quản lý điểm ưu tiên, khuyến khích", "pages/bonus.fxml"),
     WISHES("wishes", "Nguyện vọng", "Quản lý đăng ký và xét tuyển", "pages/wishes.fxml"),
     CONVERSION("conversion", "Bảng quy đổi", "Quản lý quy đổi điểm giữa các loại", "pages/conversion.fxml"),
@@ -41,11 +48,16 @@ public enum PageId {
     }
 
     public static PageId fromId(String id) {
-        if (id == null) return DASHBOARD;
-        for (PageId p : values()) {
-            if (p.id.equalsIgnoreCase(id)) return p;
+        if (id == null) {
+            return DASHBOARD;
         }
+
+        for (PageId page : values()) {
+            if (page.id.equalsIgnoreCase(id)) {
+                return page;
+            }
+        }
+
         return DASHBOARD;
     }
 }
-

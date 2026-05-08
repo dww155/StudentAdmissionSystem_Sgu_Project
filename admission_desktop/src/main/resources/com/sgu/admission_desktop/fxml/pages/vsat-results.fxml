@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.sgu.admission_desktop.controller.VsatResultsPageController"
+      styleClass="page"
+      spacing="14.0"
+      VBox.vgrow="ALWAYS">
+    <VBox styleClass="card"
+          spacing="12.0"
+          VBox.vgrow="ALWAYS">
+        <HBox styleClass="toolbar" spacing="10.0">
+            <Label text="Quản lý kết quả VSAT" styleClass="card-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Import" onAction="#onImport" styleClass="btn-success"/>
+            <Button text="Thêm mới" onAction="#onAddNew" styleClass="btn-primary"/>
+        </HBox>
+
+        <TableView fx:id="table"
+                   styleClass="table"
+                   VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colCccd" text="CCCD"/>
+                <TableColumn fx:id="colDotThi" text="Đợt thi"/>
+                <TableColumn fx:id="colMaDotThi" text="Mã đợt"/>
+                <TableColumn fx:id="colNgayThi" text="Ngày thi"/>
+                <TableColumn fx:id="colMonThi" text="Môn thi"/>
+                <TableColumn fx:id="colDiem" text="Điểm"/>
+            </columns>
+        </TableView>
+
+        <HBox spacing="8.0" styleClass="toolbar">
+            <Label fx:id="pageInfoLabel"
+                   styleClass="muted"
+                   text="Page 1/1 - 0 VSAT records"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button fx:id="prevPageButton"
+                    text="Previous"
+                    onAction="#onPreviousPage"
+                    styleClass="icon-btn"/>
+
+            <Button fx:id="nextPageButton"
+                    text="Next"
+                    onAction="#onNextPage"
+                    styleClass="icon-btn"/>
+        </HBox>
+    </VBox>
+</VBox>
