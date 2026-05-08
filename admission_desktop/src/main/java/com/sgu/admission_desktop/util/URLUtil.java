@@ -113,6 +113,36 @@ public final class URLUtil {
         }
     }
 
+    // ===================== VSAT RESULTS =====================
+    public static final class VSAT_RESULT {
+        private VSAT_RESULT() {
+        }
+
+        public static final String GET_ALL = build("/vsat-results");
+        public static final String CREATE = build("/vsat-results");
+        public static final String CREATE_BULK = build("/vsat-results/bulk");
+
+        public static String GET_PAGINATED(int page, int size, String sortBy, String sortDir) {
+            return build("/vsat-results/paginated?page=" + page + "&size=" + size + "&sortBy=" + sortBy + "&sortDir=" + sortDir);
+        }
+
+        public static String GET_BY_ID(long id) {
+            return build("/vsat-results/" + id);
+        }
+
+        public static String GET_BY_CCCD(String cccd) {
+            return build("/vsat-results/cccd=" + cccd);
+        }
+
+        public static String UPDATE(long id) {
+            return build("/vsat-results/" + id);
+        }
+
+        public static String DELETE(long id) {
+            return build("/vsat-results/" + id);
+        }
+    }
+
     // ===================== CONVERSION RULES =====================
     public static final class CONVERSION_RULE {
         private CONVERSION_RULE() {
