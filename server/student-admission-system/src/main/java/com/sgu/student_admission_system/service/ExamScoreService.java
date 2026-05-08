@@ -19,6 +19,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,6 +103,7 @@ public class ExamScoreService {
     }
 
     public ExamScoreResponse getExamScore(Integer id) {
+        log.info("hi");
         ExamScore examScore = examScoreRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.EXAM_SCORE_NOT_FOUND));
 
@@ -120,6 +123,16 @@ public class ExamScoreService {
                     return response;
                 })
                 .toList();
+    }
+
+    public Page<ExamScoreResponse> getExamScoresPaginated(Pageable pageable) {
+        return examScoreRepository.findAll(pageable)
+                .map(examScore -> {
+                    ExamScoreResponse response = examScoreMapper.toExamScoreResponse(examScore);
+                    response.setStandardizedScore(null);
+                    response.setConversionCode(null);
+                    return response;
+                });
     }
 
     @Transactional

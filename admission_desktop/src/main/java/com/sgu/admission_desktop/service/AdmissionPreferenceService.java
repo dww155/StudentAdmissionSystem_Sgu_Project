@@ -9,6 +9,7 @@ import com.sgu.admission_desktop.dto.ApiResponse;
 import com.sgu.admission_desktop.util.URLUtil;
 
 import java.util.List;
+import java.util.Map;
 
 public class AdmissionPreferenceService extends BaseApiService {
 
@@ -17,6 +18,15 @@ public class AdmissionPreferenceService extends BaseApiService {
                 URLUtil.ADMISSION_PREFERENCE.GET_ALL,
                 true,
                 new TypeReference<ApiResponse<List<AdmissionPreferenceResponse>>>() {
+                }
+        );
+    }
+
+    public ApiResponse<Map<String, Object>> getPaginated(int page, int size, String sortBy, String sortDir) {
+        return get(
+                URLUtil.ADMISSION_PREFERENCE.GET_PAGINATED(page, size, sortBy, sortDir),
+                true,
+                new TypeReference<ApiResponse<Map<String, Object>>>() {
                 }
         );
     }

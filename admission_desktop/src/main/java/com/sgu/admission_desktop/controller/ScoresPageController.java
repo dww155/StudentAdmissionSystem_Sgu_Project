@@ -1,17 +1,18 @@
 package com.sgu.admission_desktop.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.sgu.admission_desktop.dto.ApiResponse;
-import com.sgu.admission_desktop.dto.Applicant.ApplicantResponse;
 import com.sgu.admission_desktop.dto.ExamScore.ExamScoreCreationRequest;
 import com.sgu.admission_desktop.dto.ExamScore.ExamScoreResponse;
 import com.sgu.admission_desktop.dto.ExamScore.ListExamScoreCreationRequest;
-import com.sgu.admission_desktop.service.ApplicantService;
 import com.sgu.admission_desktop.service.ExamScoreService;
 import com.sgu.admission_desktop.util.ExcelImportUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
@@ -21,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class ScoresPageController implements Initializable {
 
@@ -30,9 +30,6 @@ public class ScoresPageController implements Initializable {
 
     @FXML
     private TableColumn<ScoreRow, String> colMaTs;
-
-    @FXML
-    private TableColumn<ScoreRow, String> colHoTen;
 
     @FXML
     private TableColumn<ScoreRow, String> colLoaiDiem;
@@ -49,9 +46,25 @@ public class ScoresPageController implements Initializable {
     @FXML
     private TableColumn<ScoreRow, String> colTongDiem;
 
+    @FXML
+    private Button prevPageButton;
+
+    @FXML
+    private Button nextPageButton;
+
+    @FXML
+    private Label pageInfoLabel;
+
     private final ObservableList<ScoreRow> items = FXCollections.observableArrayList();
     private final ExamScoreService examScoreService = new ExamScoreService();
-    private final ApplicantService applicantService = new ApplicantService();
+
+    private static final int PAGE_SIZE = 20;
+    private static final String PAGE_SORT_BY = "id";
+    private static final String PAGE_SORT_DIR = "asc";
+
+    private int currentPage = 0;
+    private int totalPages = 1;
+    private long totalElements = 0;
 
     private static final List<ExcelImportUtil.ColumnDefinition> IMPORT_COLUMNS = List.of(
             ExcelImportUtil.ColumnDefinition.optional("stt", "STT"),
@@ -76,12 +89,9 @@ public class ScoresPageController implements Initializable {
             ExcelImportUtil.ColumnDefinition.optional("nk2", "NK2")
     );
 
-    private Map<String, String> applicantNameByCccd = Map.of();
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         colMaTs.setCellValueFactory(v -> v.getValue().maTsProperty());
-        colHoTen.setCellValueFactory(v -> v.getValue().hoTenProperty());
         colLoaiDiem.setCellValueFactory(v -> v.getValue().loaiDiemProperty());
         colMon1.setCellValueFactory(v -> v.getValue().mon1Property());
         colMon2.setCellValueFactory(v -> v.getValue().mon2Property());
@@ -91,21 +101,56 @@ public class ScoresPageController implements Initializable {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(items);
 
-        loadScores();
+        loadScores(0);
     }
 
-    private void loadScores() {
-        try {
-            applicantNameByCccd = loadApplicantNames();
+    @FXML
+    private void onPreviousPage() {
+        if (currentPage <= 0) {
+            return;
+        }
+        loadScores(currentPage - 1);
+    }
 
-            ApiResponse<List<ExamScoreResponse>> response = examScoreService.getAll();
-            List<ExamScoreResponse> scores = response.getData() == null ? List.of() : response.getData();
+    @FXML
+    private void onNextPage() {
+        if (currentPage + 1 >= totalPages) {
+            return;
+        }
+        loadScores(currentPage + 1);
+    }
+
+    private void loadScores(int requestedPage) {
+        try {
+            ApiResponse<Map<String, Object>> response = examScoreService.getPaginated(
+                    Math.max(requestedPage, 0),
+                    PAGE_SIZE,
+                    PAGE_SORT_BY,
+                    PAGE_SORT_DIR
+            );
+
+            Map<String, Object> pageData = response.getData() == null ? Map.of() : response.getData();
+            List<ExamScoreResponse> scores = extractScores(pageData);
 
             items.setAll(scores.stream()
                     .map(this::toRow)
                     .toList());
+
+            currentPage = Math.max(extractInt(pageData, requestedPage, "pageNumber", "number", "page"), 0);
+            totalPages = Math.max(extractInt(pageData, 1, "totalPages"), 1);
+            totalElements = Math.max(extractLong(pageData, scores.size(), "totalElements"), scores.size());
+
+            if (currentPage >= totalPages) {
+                currentPage = totalPages - 1;
+            }
+
+            updatePaginationControls();
         } catch (Exception e) {
             items.clear();
+            currentPage = 0;
+            totalPages = 1;
+            totalElements = 0;
+            updatePaginationControls();
             ControllerSupport.showError("Load exam scores failed", ControllerSupport.extractMessage(e));
         }
     }
@@ -139,7 +184,7 @@ public class ScoresPageController implements Initializable {
                             .examScoreCreationRequestList(requests)
                             .build()
             );
-            loadScores();
+            loadScores(currentPage);
             ControllerSupport.showInfo("Import exam scores", "Imported " + requests.size() + " exam scores from Excel.");
         } catch (IllegalArgumentException e) {
             ControllerSupport.showError("Import exam scores failed", e.getMessage());
@@ -175,7 +220,7 @@ public class ScoresPageController implements Initializable {
 
             ExamScoreCreationRequest request = ControllerSupport.convert(payload, ExamScoreCreationRequest.class);
             examScoreService.create(request);
-            loadScores();
+            loadScores(currentPage);
         } catch (IllegalArgumentException e) {
             ControllerSupport.showError("Invalid exam score", e.getMessage());
         } catch (Exception e) {
@@ -212,26 +257,99 @@ public class ScoresPageController implements Initializable {
         return ControllerSupport.convert(payload, ExamScoreCreationRequest.class);
     }
 
-    private Map<String, String> loadApplicantNames() {
-        ApiResponse<List<ApplicantResponse>> response = applicantService.getAll();
-        List<ApplicantResponse> applicants = response.getData() == null ? List.of() : response.getData();
+    private List<ExamScoreResponse> extractScores(Map<String, Object> pageData) {
+        Object content = firstNonNull(
+                pageData.get("content"),
+                pageData.get("items"),
+                pageData.get("records")
+        );
+        if (content == null) {
+            return List.of();
+        }
 
-        return applicants.stream()
-                .map(ControllerSupport::toMap)
-                .collect(Collectors.toMap(
-                        item -> ControllerSupport.safeString(item.get("cccd")),
-                        item -> (ControllerSupport.safeString(item.get("lastName")) + " " + ControllerSupport.safeString(item.get("firstName"))).trim(),
-                        (left, right) -> left
-                ));
+        return ControllerSupport.convertList(
+                content,
+                new TypeReference<List<ExamScoreResponse>>() {
+                }
+        );
+    }
+
+    private int extractInt(Map<String, Object> data, int defaultValue, String... keys) {
+        for (String key : keys) {
+            Integer parsed = parseInt(data.get(key));
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return defaultValue;
+    }
+
+    private long extractLong(Map<String, Object> data, long defaultValue, String... keys) {
+        for (String key : keys) {
+            Long parsed = parseLong(data.get(key));
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return defaultValue;
+    }
+
+    private Integer parseInt(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            String text = ControllerSupport.trimToNull(String.valueOf(value));
+            return text == null ? null : Integer.parseInt(text);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private Long parseLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        try {
+            String text = ControllerSupport.trimToNull(String.valueOf(value));
+            return text == null ? null : Long.parseLong(text);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private Object firstNonNull(Object... values) {
+        for (Object value : values) {
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private void updatePaginationControls() {
+        if (pageInfoLabel != null) {
+            pageInfoLabel.setText("Page " + (currentPage + 1) + "/" + Math.max(totalPages, 1) + " - " + totalElements + " scores");
+        }
+        if (prevPageButton != null) {
+            prevPageButton.setDisable(currentPage <= 0);
+        }
+        if (nextPageButton != null) {
+            nextPageButton.setDisable(currentPage + 1 >= totalPages);
+        }
     }
 
     private ScoreRow toRow(ExamScoreResponse score) {
         Map<String, Object> data = ControllerSupport.toMap(score);
-        String cccd = ControllerSupport.safeString(data.get("cccd"));
 
         return new ScoreRow(
                 ControllerSupport.safeString(data.get("registrationNumber")),
-                applicantNameByCccd.getOrDefault(cccd, cccd),
                 ControllerSupport.safeString(data.get("method")),
                 ControllerSupport.safeString(data.get("to")),
                 ControllerSupport.safeString(data.get("li")),

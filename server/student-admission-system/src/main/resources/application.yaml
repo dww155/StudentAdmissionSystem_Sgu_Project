@@ -1,3 +1,8 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /sas
+
 spring:
   application:
     name: student-admission-system
@@ -37,11 +42,6 @@ spring:
           auth: true
           starttls:
             enable: true
-
-server:
-  port: 8080
-  servlet:
-    context-path: /sas
 
 logging:
   level:

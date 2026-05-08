@@ -5,23 +5,17 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 
 public class BonusRow {
     private final ReadOnlyStringWrapper maTs = new ReadOnlyStringWrapper();
-    private final ReadOnlyStringWrapper hoTen = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper diemCong = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper lyDo = new ReadOnlyStringWrapper();
 
-    public BonusRow(String maTs, String hoTen, String diemCong, String lyDo) {
+    public BonusRow(String maTs, String diemCong, String lyDo) {
         this.maTs.set(maTs);
-        this.hoTen.set(hoTen);
         this.diemCong.set(diemCong);
         this.lyDo.set(lyDo);
     }
 
     public ReadOnlyStringProperty maTsProperty() {
         return maTs.getReadOnlyProperty();
-    }
-
-    public ReadOnlyStringProperty hoTenProperty() {
-        return hoTen.getReadOnlyProperty();
     }
 
     public ReadOnlyStringProperty diemCongProperty() {
@@ -32,4 +26,3 @@ public class BonusRow {
         return lyDo.getReadOnlyProperty();
     }
 }
-

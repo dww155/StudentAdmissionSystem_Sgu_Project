@@ -48,10 +48,10 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth ->
                         auth
-                                .requestMatchers(OPEN_API_ENDPOINTS).permitAll()
-                                .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-//                                .requestMatchers(HttpMethod.GET, "/hello").permitAll()
-                                .anyRequest().authenticated()
+//                                .requestMatchers(OPEN_API_ENDPOINTS).permitAll()
+//                                .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+////                                .requestMatchers(HttpMethod.GET, "/hello").permitAll()
+                                .anyRequest().permitAll()
 
                 )
         ;

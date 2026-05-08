@@ -77,7 +77,7 @@ public class LoginController {
 
             Application.showMainLayout();
         } catch (Exception e) {
-            showError(ControllerSupport.extractMessage(e));
+            showError("Sai thông tin đăng nhập");
             setLoading(false);
         }
     }
