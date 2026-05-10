@@ -18,10 +18,7 @@ import javafx.scene.control.TableView;
 
 import java.math.BigDecimal;
 import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class ScoresPageController implements Initializable {
 
@@ -346,14 +343,38 @@ public class ScoresPageController implements Initializable {
     }
 
     private ScoreRow toRow(ExamScoreResponse score) {
+
         Map<String, Object> data = ControllerSupport.toMap(score);
+
+        List<String> subjects = new ArrayList<>();
+
+        // Danh sách các field môn học
+        List<String> subjectFields = List.of(
+                "to", "li", "ho", "si", "su",
+                "di", "va", "n1Thi", "n1Cc",
+                "cncn", "cnnn", "ti", "ktpl",
+                "nl1", "nk1", "nk2"
+        );
+
+        for (String field : subjectFields) {
+
+            Object value = data.get(field);
+
+            if (value instanceof BigDecimal bd
+                    && bd.compareTo(BigDecimal.ZERO) != 0) {
+
+                subjects.add(bd.toPlainString());
+            }
+        }
 
         return new ScoreRow(
                 ControllerSupport.safeString(data.get("registrationNumber")),
                 ControllerSupport.safeString(data.get("method")),
-                ControllerSupport.safeString(data.get("to")),
-                ControllerSupport.safeString(data.get("li")),
-                ControllerSupport.safeString(data.get("ho")),
+
+                subjects.size() > 0 ? subjects.get(0) : "",
+                subjects.size() > 1 ? subjects.get(1) : "",
+                subjects.size() > 2 ? subjects.get(2) : "",
+
                 ControllerSupport.safeString(data.get("standardizedScore"))
         );
     }

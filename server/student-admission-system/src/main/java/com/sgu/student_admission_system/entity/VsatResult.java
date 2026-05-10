@@ -21,8 +21,8 @@ public class VsatResult {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "cccd", referencedColumnName = "cccd", nullable = false, unique = true)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cccd", referencedColumnName = "cccd", nullable = false, unique = false)
     Applicant applicant;
 
     @Column(name = "dot_thi")

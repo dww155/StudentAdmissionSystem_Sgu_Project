@@ -23,7 +23,7 @@ public class EnglishCertificationUpdateRequest {
     BigDecimal certificationScore;
 
     @DecimalMin(value = "0.0", message = "INVALID_ENGLISH_CONVERSION_SCORE")
-    BigDecimal conversionScore;
+    String conversionScore;
 
     @DecimalMin(value = "0.0", message = "INVALID_ENGLISH_BONUS_SCORE")
     BigDecimal bonusScore;
