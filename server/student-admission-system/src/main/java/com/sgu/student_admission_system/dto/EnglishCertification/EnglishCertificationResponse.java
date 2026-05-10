@@ -19,6 +19,6 @@ public class EnglishCertificationResponse {
 
     String certificationName;
     BigDecimal certificationScore;
-    BigDecimal conversionScore;
+    String conversionScore;
     BigDecimal bonusScore;
 }

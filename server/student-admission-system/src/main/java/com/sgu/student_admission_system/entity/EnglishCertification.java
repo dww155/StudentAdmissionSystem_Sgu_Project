@@ -27,8 +27,8 @@ public class EnglishCertification {
     @Column(name = "certification_name", nullable = false, length = 255)
     String certificationName;
 
-    @Column(name = "certification_score", precision = 5, scale = 2, nullable = false)
-    BigDecimal certificationScore;
+    @Column(name = "certification_level_score", precision = 5, scale = 2, nullable = false)
+    String certificationScore;
 
     @Column(name = "conversion_score", precision = 5, scale = 2)
     BigDecimal conversionScore;
