@@ -15,7 +15,7 @@ public class Application extends javafx.application.Application {
     public void start(Stage stage) {
         primaryStage = stage;
         primaryStage.setTitle("SGU Admission Desktop");
-        showLoginLayout();
+        showMainLayout();
     }
 
     public static void main(String[] args) {

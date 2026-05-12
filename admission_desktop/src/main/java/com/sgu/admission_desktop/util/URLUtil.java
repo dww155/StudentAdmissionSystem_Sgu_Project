@@ -6,7 +6,7 @@ public final class URLUtil {
     }
 
     // ===================== BASE URL =====================
-    public static final String BASE_URL = "http://localhost:8080/sas";
+    public static final String BASE_URL = ConfigUtil.get("BASE_URL");
 
     private static String build(String endpoint) {
         return BASE_URL + endpoint;
