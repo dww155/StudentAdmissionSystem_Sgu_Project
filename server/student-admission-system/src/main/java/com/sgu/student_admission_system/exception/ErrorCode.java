@@ -116,6 +116,12 @@ public enum ErrorCode {
     INVALID_ENGLISH_BONUS_SCORE("Invalid english bonus score", 1976, HttpStatus.BAD_REQUEST),
     INVALID_ENGLISH_CERTIFICATION_LIST("Invalid english certification list", 1977, HttpStatus.BAD_REQUEST),
 
+    PRIORITY_BONUS_POINT_NOT_FOUND("Priority bonus point not found", 1981, HttpStatus.NOT_FOUND),
+    PRIORITY_BONUS_POINT_ALREADY_EXISTS("Priority bonus point already exists", 1982, HttpStatus.BAD_REQUEST),
+    INVALID_PRIORITY_BONUS_POINT_FOR_SUBJECT("Invalid priority bonus point for subject", 1983, HttpStatus.BAD_REQUEST),
+    INVALID_PRIORITY_BONUS_POINT_FOR_SUBJECT_GROUP("Invalid priority bonus point for subject group", 1984, HttpStatus.BAD_REQUEST),
+    INVALID_PRIORITY_BONUS_POINT_LIST("Invalid priority bonus point list", 1985, HttpStatus.BAD_REQUEST),
+
     INVALID_APPLICANT_ID("Invalid applicant", 2001, HttpStatus.BAD_REQUEST),
     INVALID_MAJOR_ID("Invalid major", 2002, HttpStatus.BAD_REQUEST),
     INVALID_PRIORITY_ORDER("Invalid preference priority order", 2003, HttpStatus.BAD_REQUEST),

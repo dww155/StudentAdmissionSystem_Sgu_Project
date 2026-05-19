@@ -1,23 +1,29 @@
 package com.sgu.admission_desktop.controller;
 
 public enum PageId {
-    DASHBOARD("dashboard", "Tổng quan", "Thống kê tổng hợp hệ thống tuyển sinh", "pages/dashboard.fxml"),
-    STUDENTS("students", "Quản lý thí sinh", "Xem, thêm, sửa, xóa thông tin thí sinh", "pages/students.fxml"),
-    MAJORS("majors", "Ngành tuyển sinh", "Quản lý danh sách ngành đào tạo", "pages/majors.fxml"),
-    SUBJECTS("subjects", "Tổ hợp môn", "Quản lý tổ hợp môn xét tuyển", "pages/subjects.fxml"),
-    MAJOR_SUBJECTS("major-subjects", "Ngành - Tổ hợp", "Liên kết ngành với tổ hợp môn", "pages/major-subjects.fxml"),
-    SCORES("scores", "Điểm THPT", "Quản lý điểm thi THPT", "pages/scores.fxml"),
-    VSAT_RESULTS("vsat-results", "Kết quả VSAT", "Quản lý kết quả thi VSAT", "pages/vsat-results.fxml"),
+    DASHBOARD("dashboard", "Tong quan", "Thong ke tong hop he thong tuyen sinh", "pages/dashboard.fxml"),
+    STUDENTS("students", "Quan ly thi sinh", "Xem, them, sua, xoa thong tin thi sinh", "pages/students.fxml"),
+    MAJORS("majors", "Nganh tuyen sinh", "Quan ly danh sach nganh dao tao", "pages/majors.fxml"),
+    SUBJECTS("subjects", "To hop mon", "Quan ly to hop mon xet tuyen", "pages/subjects.fxml"),
+    MAJOR_SUBJECTS("major-subjects", "Nganh - To hop", "Lien ket nganh voi to hop mon", "pages/major-subjects.fxml"),
+    SCORES("scores", "Diem THPT", "Quan ly diem thi THPT", "pages/scores.fxml"),
+    VSAT_RESULTS("vsat-results", "Ket qua VSAT", "Quan ly ket qua thi VSAT", "pages/vsat-results.fxml"),
     ENGLISH_CERTIFICATIONS(
             "english-certifications",
-            "Chứng chỉ tiếng Anh",
-            "Quản lý chứng chỉ tiếng Anh và điểm quy đổi",
+            "Chung chi tieng Anh",
+            "Quan ly chung chi tieng Anh va diem quy doi",
             "pages/english-certifications.fxml"
     ),
-    BONUS("bonus", "Điểm cộng", "Quản lý điểm ưu tiên, khuyến khích", "pages/bonus.fxml"),
-    WISHES("wishes", "Nguyện vọng", "Quản lý đăng ký và xét tuyển", "pages/wishes.fxml"),
-    CONVERSION("conversion", "Bảng quy đổi", "Quản lý quy đổi điểm giữa các loại", "pages/conversion.fxml"),
-    ADMIN_CHANGE_PASSWORD("admin-change-password", "Đổi mật khẩu", "Đổi mật khẩu cho quản trị viên", "pages/admin-change-password.fxml");
+    BONUS("bonus", "Diem cong", "Quan ly diem uu tien, khuyen khich", "pages/bonus.fxml"),
+    PRIORITY_BONUS_POINTS(
+            "priority-bonus-points",
+            "Diem cong uu tien",
+            "Quan ly diem cong uu tien theo CCCD",
+            "pages/priority-bonus-points.fxml"
+    ),
+    WISHES("wishes", "Nguyen vong", "Quan ly dang ky va xet tuyen", "pages/wishes.fxml"),
+    CONVERSION("conversion", "Bang quy doi", "Quan ly quy doi diem giua cac loai", "pages/conversion.fxml"),
+    ADMIN_CHANGE_PASSWORD("admin-change-password", "Doi mat khau", "Doi mat khau cho quan tri vien", "pages/admin-change-password.fxml");
 
     private final String id;
     private final String title;
