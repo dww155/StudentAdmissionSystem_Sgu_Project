@@ -65,6 +65,9 @@ public class Applicant {
     @OneToMany(mappedBy = "applicant", fetch = FetchType.EAGER)
     Set<AdmissionPreference> preferences;
 
+    @OneToOne(mappedBy = "applicant")
+    EnglishCertification englishCertification;
+
     public String getFullName() {
         return (lastName != null ? lastName : "") + " " + (firstName != null ? firstName : "");
     }
