@@ -3,8 +3,10 @@ package com.sgu.student_admission_system.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.Fetch;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Entity
 @Table(name = "xt_nganh")
@@ -63,4 +65,7 @@ public class Major {
 
     @Column(name = "sl_thpt", length = 45)
     String highSchoolExamCount;
+
+    @OneToMany(mappedBy = "major", fetch = FetchType.EAGER)
+    Set<MajorSubjectGroup> majorSubjectGroups;
 }

@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Table(name = "xt_thisinhxettuyen25")
@@ -60,6 +61,9 @@ public class Applicant {
 
     @Column(name = "khu_vuc", length = 45)
     String region;
+
+    @OneToMany(mappedBy = "applicant", fetch = FetchType.EAGER)
+    Set<AdmissionPreference> preferences;
 
     public String getFullName() {
         return (lastName != null ? lastName : "") + " " + (firstName != null ? firstName : "");
