@@ -277,6 +277,36 @@ public final class URLUtil {
         }
     }
 
+    // ===================== PRIORITY BONUS POINTS =====================
+    public static final class PRIORITY_BONUS_POINT {
+        private PRIORITY_BONUS_POINT() {
+        }
+
+        public static final String GET_ALL = build("/priority-bonus-points");
+        public static final String CREATE = build("/priority-bonus-points");
+        public static final String CREATE_BULK = build("/priority-bonus-points/bulk");
+
+        public static String GET_PAGINATED(int page, int size, String sortBy, String sortDir) {
+            return build("/priority-bonus-points/paginated?page=" + page + "&size=" + size + "&sortBy=" + sortBy + "&sortDir=" + sortDir);
+        }
+
+        public static String GET_BY_ID(int id) {
+            return build("/priority-bonus-points/" + id);
+        }
+
+        public static String GET_BY_CCCD(String cccd) {
+            return build("/priority-bonus-points/cccd=" + cccd);
+        }
+
+        public static String UPDATE(int id) {
+            return build("/priority-bonus-points/" + id);
+        }
+
+        public static String DELETE(int id) {
+            return build("/priority-bonus-points/" + id);
+        }
+    }
+
     // ===================== TEST =====================
     public static final class TEST {
         private TEST() {
