@@ -65,8 +65,18 @@ public class Applicant {
     @OneToMany(mappedBy = "applicant", fetch = FetchType.EAGER)
     Set<AdmissionPreference> preferences;
 
+    @OneToOne
+    @JoinColumn(name = "nguyen_vong_da_do", referencedColumnName = "nv_keys")
+    AdmissionPreference acceptedPreference;
+
     @OneToOne(mappedBy = "applicant")
     EnglishCertification englishCertification;
+
+    @OneToMany(mappedBy = "applicant", fetch = FetchType.EAGER)
+    Set<VsatResult> vSatResults;
+
+    @OneToOne(mappedBy = "applicant", fetch = FetchType.EAGER)
+    PriorityBonusPoint priorityBonusPoint;
 
     public String getFullName() {
         return (lastName != null ? lastName : "") + " " + (firstName != null ? firstName : "");

@@ -45,12 +45,6 @@ public class StudentsPageController implements Initializable {
     private TableColumn<StudentRow, String> colCccd;
 
     @FXML
-    private TableColumn<StudentRow, String> colNgaySinh;
-
-    @FXML
-    private TableColumn<StudentRow, String> colGioiTinh;
-
-    @FXML
     private TableColumn<StudentRow, String> colEmail;
 
     @FXML
@@ -64,6 +58,28 @@ public class StudentsPageController implements Initializable {
 
     @FXML
     private Label pageInfoLabel;
+    @FXML
+    private Label detailHintLabel;
+    @FXML
+    private Label detailRegistrationLabel;
+    @FXML
+    private Label detailFullNameLabel;
+    @FXML
+    private Label detailCccdLabel;
+    @FXML
+    private Label detailDateOfBirthLabel;
+    @FXML
+    private Label detailGenderLabel;
+    @FXML
+    private Label detailEmailLabel;
+    @FXML
+    private Label detailPhoneLabel;
+    @FXML
+    private Label detailBirthPlaceLabel;
+    @FXML
+    private Label detailApplicantTypeLabel;
+    @FXML
+    private Label detailRegionLabel;
 
     private final ObservableList<StudentRow> master = FXCollections.observableArrayList();
     private final ObservableList<StudentRow> filtered = FXCollections.observableArrayList();
@@ -98,15 +114,15 @@ public class StudentsPageController implements Initializable {
         colMaTs.setCellValueFactory(v -> v.getValue().maTsProperty());
         colHoTen.setCellValueFactory(v -> v.getValue().hoTenProperty());
         colCccd.setCellValueFactory(v -> v.getValue().cccdProperty());
-        colNgaySinh.setCellValueFactory(v -> v.getValue().ngaySinhProperty());
-        colGioiTinh.setCellValueFactory(v -> v.getValue().gioiTinhProperty());
         colEmail.setCellValueFactory(v -> v.getValue().emailProperty());
         colSdt.setCellValueFactory(v -> v.getValue().sdtProperty());
 
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(filtered);
+        table.getSelectionModel().selectedItemProperty().addListener((obs, oldRow, newRow) -> loadDetailsForRow(newRow));
 
         loadApplicants(0);
+        clearDetailsPanel();
 
         searchField.textProperty().addListener((obs, oldV, newV) -> applyFilter(newV));
     }
@@ -140,6 +156,7 @@ public class StudentsPageController implements Initializable {
             if (applicant == null) {
                 master.clear();
                 filtered.clear();
+                clearDetailsPanel();
                 currentPage = 0;
                 totalPages = 1;
                 totalElements = 0;
@@ -150,6 +167,7 @@ public class StudentsPageController implements Initializable {
 
             master.setAll(toRow(applicant));
             filtered.setAll(master);
+            clearDetailsPanel();
             currentPage = 0;
             totalPages = 1;
             totalElements = 1;
@@ -277,6 +295,7 @@ public class StudentsPageController implements Initializable {
             master.setAll(applicants.stream()
                     .map(this::toRow)
                     .toList());
+            clearDetailsPanel();
             currentPage = Math.max(extractInt(pageData, requestedPage, "pageNumber", "number", "page"), 0);
             totalPages = Math.max(extractInt(pageData, 1, "totalPages"), 1);
             totalElements = Math.max(extractLong(pageData, applicants.size(), "totalElements"), applicants.size());
@@ -454,6 +473,102 @@ public class StudentsPageController implements Initializable {
                 ControllerSupport.safeString(data.get("email")),
                 ControllerSupport.safeString(data.get("phoneNumber"))
         );
+    }
+
+    private void loadDetailsForRow(StudentRow row) {
+        if (row == null) {
+            clearDetailsPanel();
+            return;
+        }
+
+        renderDetailsFromRow(row);
+
+        Task<ApplicantResponse> detailTask = new Task<>() {
+            @Override
+            protected ApplicantResponse call() {
+                ApiResponse<ApplicantResponse> response = applicantService.getByCccd(row.cccd());
+                return response.getData();
+            }
+        };
+
+        detailTask.setOnSucceeded(event -> {
+            StudentRow selected = table.getSelectionModel().getSelectedItem();
+            if (selected == null || !selected.cccd().equals(row.cccd())) {
+                return;
+            }
+
+            ApplicantResponse applicant = detailTask.getValue();
+            if (applicant != null) {
+                renderDetails(applicant);
+            }
+        });
+
+        detailTask.setOnFailed(event -> setDetailHint("Cannot load full details. Showing basic info."));
+
+        Thread detailThread = new Thread(detailTask, "students-detail-task");
+        detailThread.setDaemon(true);
+        detailThread.start();
+    }
+
+    private void renderDetailsFromRow(StudentRow row) {
+        setDetailHint("Loading detail...");
+        setDetailLabel(detailRegistrationLabel, row.maTs());
+        setDetailLabel(detailFullNameLabel, row.hoTen());
+        setDetailLabel(detailCccdLabel, row.cccd());
+        setDetailLabel(detailDateOfBirthLabel, row.ngaySinh());
+        setDetailLabel(detailGenderLabel, row.gioiTinh());
+        setDetailLabel(detailEmailLabel, row.email());
+        setDetailLabel(detailPhoneLabel, row.sdt());
+        setDetailLabel(detailBirthPlaceLabel, "-");
+        setDetailLabel(detailApplicantTypeLabel, "-");
+        setDetailLabel(detailRegionLabel, "-");
+    }
+
+    private void renderDetails(ApplicantResponse applicant) {
+        setDetailHint("Showing selected student.");
+        Map<String, Object> data = ControllerSupport.toMap(applicant);
+        String lastName = ControllerSupport.safeString(data.get("lastName"));
+        String firstName = ControllerSupport.safeString(data.get("firstName"));
+        String fullName = (lastName + " " + firstName).trim();
+
+        setDetailLabel(detailRegistrationLabel, ControllerSupport.safeString(data.get("registrationNumber")));
+        setDetailLabel(detailFullNameLabel, fullName);
+        setDetailLabel(detailCccdLabel, ControllerSupport.safeString(data.get("cccd")));
+        setDetailLabel(detailDateOfBirthLabel, ControllerSupport.formatDateValue(data.get("dateOfBirth")));
+        setDetailLabel(detailGenderLabel, formatGenderForDisplay(data.get("gender")));
+        setDetailLabel(detailEmailLabel, ControllerSupport.safeString(data.get("email")));
+        setDetailLabel(detailPhoneLabel, ControllerSupport.safeString(data.get("phoneNumber")));
+        setDetailLabel(detailBirthPlaceLabel, ControllerSupport.safeString(data.get("birthPlace")));
+        setDetailLabel(detailApplicantTypeLabel, ControllerSupport.safeString(data.get("applicantType")));
+        setDetailLabel(detailRegionLabel, ControllerSupport.safeString(data.get("region")));
+    }
+
+    private void clearDetailsPanel() {
+        setDetailHint("Select one student to view details.");
+        setDetailLabel(detailRegistrationLabel, null);
+        setDetailLabel(detailFullNameLabel, null);
+        setDetailLabel(detailCccdLabel, null);
+        setDetailLabel(detailDateOfBirthLabel, null);
+        setDetailLabel(detailGenderLabel, null);
+        setDetailLabel(detailEmailLabel, null);
+        setDetailLabel(detailPhoneLabel, null);
+        setDetailLabel(detailBirthPlaceLabel, null);
+        setDetailLabel(detailApplicantTypeLabel, null);
+        setDetailLabel(detailRegionLabel, null);
+    }
+
+    private void setDetailLabel(Label label, String value) {
+        if (label == null) {
+            return;
+        }
+        String trimmed = ControllerSupport.trimToNull(value);
+        label.setText(trimmed == null ? "-" : trimmed);
+    }
+
+    private void setDetailHint(String text) {
+        if (detailHintLabel != null) {
+            detailHintLabel.setText(text);
+        }
     }
 
     private NameParts extractImportedName(Map<String, String> data) {

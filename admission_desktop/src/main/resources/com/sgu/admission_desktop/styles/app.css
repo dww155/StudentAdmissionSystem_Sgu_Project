@@ -264,6 +264,17 @@
     -fx-alignment: CENTER_LEFT;
 }
 
+.detail-key {
+    -fx-text-fill: #374151;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+.detail-value {
+    -fx-text-fill: #111827;
+    -fx-font-size: 12px;
+}
+
 /* Login */
 .login-root {
     -fx-background-color: linear-gradient(to bottom right, #dbeafe 0%, #f8fafc 55%, #e2e8f0 100%);

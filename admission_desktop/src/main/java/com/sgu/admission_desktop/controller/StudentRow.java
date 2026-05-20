@@ -34,6 +34,22 @@ public class StudentRow {
         return cccd.get();
     }
 
+    public String ngaySinh() {
+        return ngaySinh.get();
+    }
+
+    public String gioiTinh() {
+        return gioiTinh.get();
+    }
+
+    public String email() {
+        return email.get();
+    }
+
+    public String sdt() {
+        return sdt.get();
+    }
+
     public ReadOnlyStringProperty maTsProperty() {
         return maTs.getReadOnlyProperty();
     }

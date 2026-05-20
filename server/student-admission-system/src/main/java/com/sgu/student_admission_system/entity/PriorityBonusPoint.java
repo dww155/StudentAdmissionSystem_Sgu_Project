@@ -22,12 +22,7 @@ public class PriorityBonusPoint {
     Integer id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "cccd",
-            referencedColumnName = "cccd",
-            nullable = false,
-            unique = true
-    )
+    @JoinColumn(name = "cccd", referencedColumnName = "cccd", nullable = false, unique = true)
     Applicant applicant;
 
     @Column(name = "cap", length = 100)
