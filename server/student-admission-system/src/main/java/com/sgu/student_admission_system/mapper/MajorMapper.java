@@ -19,6 +19,7 @@ public interface MajorMapper {
             target = "baseCombination",
             expression = "java(major.getBaseCombination() != null ? major.getBaseCombination().getCode() : null)"
     )
+    @Mapping(target = "highSchoolExamCount", source = "java()")
     MajorResponse toMajorResponse(Major major);
 
     @Mapping(target = "id", ignore = true)

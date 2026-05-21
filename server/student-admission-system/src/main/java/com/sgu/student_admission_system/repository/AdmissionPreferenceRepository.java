@@ -1,6 +1,7 @@
 package com.sgu.student_admission_system.repository;
 
 import com.sgu.student_admission_system.entity.AdmissionPreference;
+import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,5 +15,4 @@ public interface AdmissionPreferenceRepository extends JpaRepository<AdmissionPr
 
     @EntityGraph(attributePaths = "applicant")
     List<AdmissionPreference> findAllByApplicant_CccdIn(Collection<String> cccds);
-
 }
