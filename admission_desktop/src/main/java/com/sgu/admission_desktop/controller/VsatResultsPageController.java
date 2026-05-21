@@ -15,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 
 import java.net.URL;
 import java.util.LinkedHashMap;
@@ -53,6 +54,8 @@ public class VsatResultsPageController implements Initializable {
 
     @FXML
     private Label pageInfoLabel;
+    @FXML
+    private TextField searchField;
 
     private final ObservableList<VsatResultRow> items = FXCollections.observableArrayList();
     private final VsatResultService vsatResultService = new VsatResultService();
@@ -108,6 +111,36 @@ public class VsatResultsPageController implements Initializable {
             return;
         }
         loadVsatResults(currentPage + 1);
+    }
+
+    @FXML
+    private void onSearchByCccd() {
+        String cccd = ControllerSupport.trimToNull(searchField == null ? null : searchField.getText());
+        if (cccd == null) {
+            loadVsatResults(0);
+            return;
+        }
+
+        try {
+            ApiResponse<List<VsatResultResponse>> response = vsatResultService.getByCccd(cccd);
+            List<VsatResultResponse> vsatResults = response.getData() == null ? List.of() : response.getData();
+            if (vsatResults.isEmpty()) {
+                items.clear();
+                currentPage = 0;
+                totalPages = 1;
+                totalElements = 0;
+                updatePaginationControls();
+                return;
+            }
+
+            items.setAll(vsatResults.stream().map(this::toRow).toList());
+            currentPage = 0;
+            totalPages = 1;
+            totalElements = vsatResults.size();
+            updatePaginationControls();
+        } catch (Exception e) {
+            ControllerSupport.showError("Search VSAT by CCCD failed", ControllerSupport.extractMessage(e));
+        }
     }
 
     private void loadVsatResults(int requestedPage) {

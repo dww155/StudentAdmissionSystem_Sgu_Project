@@ -10,6 +10,7 @@ import com.sgu.student_admission_system.entity.SubjectCombination;
 import com.sgu.student_admission_system.exception.AppException;
 import com.sgu.student_admission_system.exception.ErrorCode;
 import com.sgu.student_admission_system.mapper.MajorMapper;
+import com.sgu.student_admission_system.repository.AdmissionPreferenceRepository;
 import com.sgu.student_admission_system.repository.MajorRepository;
 import com.sgu.student_admission_system.repository.SubjectCombinationRepository;
 import jakarta.persistence.EntityManager;
@@ -36,6 +37,7 @@ public class MajorService {
 
     MajorRepository majorRepository;
     MajorMapper majorMapper;
+    AdmissionPreferenceRepository admissionPreferenceRepository;
 
     SubjectCombinationRepository subjectCombinationRepository;
     EntityManager entityManager;
@@ -49,9 +51,8 @@ public class MajorService {
 
         major.setBaseCombination(subjectCombination);
 
-        return majorMapper.toMajorResponse(
-                majorRepository.save(major)
-        );
+        Major savedMajor = majorRepository.save(major);
+        return toMajorResponseWithPreferenceCount(savedMajor);
     }
 
     @Transactional
@@ -85,21 +86,43 @@ public class MajorService {
             flushAndClear();
         }
 
-        return majorResponses;
+        return attachPreferenceCountForList(majorResponses);
     }
 
     public MajorResponse getMajor(Integer id) {
         Major major = majorRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.MAJOR_NOT_FOUND));
 
-        return majorMapper.toMajorResponse(major);
+        List<String> majorSubjectGroups = major.getMajorSubjectGroups()
+                .stream()
+                .map(majorSubjectGroup -> majorSubjectGroup.getSubjectCombination()
+                        .getCode())
+                .toList();
+
+        MajorResponse majorResponse = toMajorResponseWithPreferenceCount(major);
+        majorResponse.setMajorSubjectGroups(majorSubjectGroups);
+
+        return majorResponse;
     }
 
     public List<MajorResponse> getAllMajors() {
-        return majorRepository.findAll()
-                .stream()
-                .map(majorMapper::toMajorResponse)
-                .toList();
+        List<Major> majors = majorRepository.findAll();
+
+        List<MajorResponse> responses = new ArrayList<>();
+
+        majors.forEach(major -> {
+            List<String> majorSubjectGroups = major.getMajorSubjectGroups()
+                    .stream()
+                    .map(majorSubjectGroup -> majorSubjectGroup.getSubjectCombination()
+                            .getCode())
+                    .toList();
+
+            MajorResponse majorResponse = majorMapper.toMajorResponse(major);
+            majorResponse.setMajorSubjectGroups(majorSubjectGroups);
+
+            responses.add(majorResponse);
+        });
+        return attachPreferenceCountForList(responses);
     }
 
     public long getMajorCount() {
@@ -120,9 +143,8 @@ public class MajorService {
 
             major.setBaseCombination(subjectCombination);
         }
-        return majorMapper.toMajorResponse(
-                majorRepository.save(major)
-        );
+        Major savedMajor = majorRepository.save(major);
+        return toMajorResponseWithPreferenceCount(savedMajor);
     }
 
     @Transactional
@@ -158,5 +180,35 @@ public class MajorService {
     private void flushAndClear() {
         majorRepository.flush();
         entityManager.clear();
+    }
+
+    private MajorResponse toMajorResponseWithPreferenceCount(Major major) {
+        MajorResponse response = majorMapper.toMajorResponse(major);
+        response.setAdmissionPreferenceCount(admissionPreferenceRepository.countByMajor_Id(major.getId()));
+        return response;
+    }
+
+    private List<MajorResponse> attachPreferenceCountForList(List<MajorResponse> responses) {
+        if (responses == null || responses.isEmpty()) {
+            return responses;
+        }
+
+        Set<Integer> majorIds = responses.stream()
+                .map(MajorResponse::getId)
+                .collect(Collectors.toSet());
+
+        Map<Integer, Long> preferenceCountByMajorId = admissionPreferenceRepository.countByMajorIds(majorIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Integer) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        responses.forEach(response ->
+                response.setAdmissionPreferenceCount(
+                        preferenceCountByMajorId.getOrDefault(response.getId(), 0L)
+                )
+        );
+
+        return responses;
     }
 }

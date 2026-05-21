@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -17,10 +18,12 @@
           spacing="12.0"
           VBox.vgrow="ALWAYS">
         <HBox styleClass="toolbar" spacing="10.0">
-            <Label text="Quản lý chứng chỉ tiếng Anh" styleClass="card-title"/>
+            <Label text="Quan ly chung chi tieng Anh" styleClass="card-title"/>
             <Region HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="searchField" promptText="Nhap CCCD"/>
+            <Button text="Tim" onAction="#onSearchByCccd" styleClass="icon-btn"/>
             <Button text="Import" onAction="#onImport" styleClass="btn-success"/>
-            <Button text="Thêm mới" onAction="#onAddNew" styleClass="btn-primary"/>
+            <Button text="Them moi" onAction="#onAddNew" styleClass="btn-primary"/>
         </HBox>
 
         <TableView fx:id="table"
@@ -28,10 +31,10 @@
                    VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colCccd" text="CCCD"/>
-                <TableColumn fx:id="colCertificationName" text="Chứng chỉ"/>
-                <TableColumn fx:id="colCertificationScore" text="Điểm CC"/>
-                <TableColumn fx:id="colConversionScore" text="Điểm quy đổi"/>
-                <TableColumn fx:id="colBonusScore" text="Điểm cộng"/>
+                <TableColumn fx:id="colCertificationName" text="Chung chi"/>
+                <TableColumn fx:id="colCertificationScore" text="Diem CC"/>
+                <TableColumn fx:id="colConversionScore" text="Diem quy doi"/>
+                <TableColumn fx:id="colBonusScore" text="Diem cong"/>
             </columns>
         </TableView>
 

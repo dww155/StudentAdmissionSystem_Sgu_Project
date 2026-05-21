@@ -4,6 +4,8 @@ import com.sgu.student_admission_system.entity.AdmissionPreference;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,4 +17,9 @@ public interface AdmissionPreferenceRepository extends JpaRepository<AdmissionPr
 
     @EntityGraph(attributePaths = "applicant")
     List<AdmissionPreference> findAllByApplicant_CccdIn(Collection<String> cccds);
+
+    @Query("SELECT ap.major.id, COUNT(ap) FROM AdmissionPreference ap WHERE ap.major.id IN :majorIds GROUP BY ap.major.id")
+    List<Object[]> countByMajorIds(@Param("majorIds") Collection<Integer> majorIds);
+
+    long countByMajor_Id(Integer majorId);
 }

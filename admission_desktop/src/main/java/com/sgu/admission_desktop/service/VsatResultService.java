@@ -40,11 +40,11 @@ public class VsatResultService extends BaseApiService {
         );
     }
 
-    public ApiResponse<VsatResultResponse> getByCccd(String cccd) {
+    public ApiResponse<List<VsatResultResponse>> getByCccd(String cccd) {
         return get(
                 URLUtil.VSAT_RESULT.GET_BY_CCCD(cccd),
                 true,
-                new TypeReference<ApiResponse<VsatResultResponse>>() {
+                new TypeReference<ApiResponse<List<VsatResultResponse>>>() {
                 }
         );
     }

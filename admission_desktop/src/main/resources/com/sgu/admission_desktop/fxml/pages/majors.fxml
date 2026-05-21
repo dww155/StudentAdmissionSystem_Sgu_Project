@@ -13,16 +13,17 @@
       styleClass="page" spacing="14.0">
     <VBox styleClass="card" spacing="12.0">
         <HBox styleClass="toolbar" spacing="10.0">
-            <Label text="Danh sách ngành tuyển sinh" styleClass="card-title"/>
+            <Label text="Danh sach nganh tuyen sinh" styleClass="card-title"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Import" onAction="#onImport" styleClass="btn-success"/>
-            <Button text="Thêm mới" onAction="#onAddNew" styleClass="btn-primary"/>
+            <Button text="Them moi" onAction="#onAddNew" styleClass="btn-primary"/>
         </HBox>
         <TableView fx:id="table" styleClass="table">
             <columns>
-                <TableColumn fx:id="colMaNganh" text="Mã ngành"/>
-                <TableColumn fx:id="colTenNganh" text="Tên ngành"/>
-                <TableColumn fx:id="colChiTieu" text="Chỉ tiêu"/>
+                <TableColumn fx:id="colMaNganh" text="Ma nganh"/>
+                <TableColumn fx:id="colTenNganh" text="Ten nganh"/>
+                <TableColumn fx:id="colChiTieu" text="Chi tieu"/>
+                <TableColumn fx:id="colSoNguyenVong" text="So nguyen vong"/>
             </columns>
         </TableView>
     </VBox>

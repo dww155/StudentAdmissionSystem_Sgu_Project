@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -29,4 +30,6 @@ public class MajorResponse {
     Integer competencyExamCount;
     Integer vsatCount;
     String highSchoolExamCount;
+    Long admissionPreferenceCount;
+    List<String> majorSubjectGroups;
 }

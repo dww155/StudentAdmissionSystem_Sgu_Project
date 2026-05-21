@@ -11,7 +11,7 @@ public interface VsatResultRepository extends JpaRepository<VsatResult, Long> {
 
     boolean existsByApplicant_Cccd(String cccd);
 
-    Optional<VsatResult> findByApplicant_Cccd(String cccd);
+    List<VsatResult> findAllByApplicant_Cccd(String cccd);
 
     List<VsatResult> findAllByApplicant_CccdIn(Collection<String> cccds);
 }

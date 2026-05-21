@@ -1,0 +1,123 @@
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Kết quả tuyển sinh</title>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-800">
+    <header class="border-b bg-white">
+        <div class="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
+            <div>
+                <h1 class="text-xl font-semibold">Kết quả tuyển sinh</h1>
+                <p class="text-sm text-slate-500">Trạng thái trúng tuyển và chi tiết điểm theo từng nguyện vọng.</p>
+            </div>
+            <a href="/" class="text-sm font-medium text-blue-600 hover:text-blue-700">Về trang chủ</a>
+        </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-6xl space-y-8 px-6 py-10">
+        <section class="rounded-2xl border bg-white p-6 shadow-sm">
+            <h2 class="text-lg font-semibold">Thông tin thí sinh</h2>
+            <div class="mt-4 grid gap-4 md:grid-cols-2" th:if="${student != null}">
+                <div>
+                    <p class="text-xs uppercase text-slate-400">CCCD</p>
+                    <p class="mt-1 text-sm font-medium" th:text="${student.cccd}">---</p>
+                </div>
+                <div>
+                    <p class="text-xs uppercase text-slate-400">Ngày sinh</p>
+                    <p class="mt-1 text-sm font-medium" th:text="${student.birth}">---</p>
+                </div>
+            </div>
+            <p class="mt-4 text-sm text-slate-500" th:if="${student == null}">
+                Không tìm thấy thí sinh. Vui lòng đăng nhập lại để xem kết quả.
+            </p>
+        </section>
+
+        <section class="rounded-2xl border bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold">Kết quả trúng tuyển theo nguyện vọng</h2>
+                <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700"
+                    th:text="${statusSummary}">Cập nhật mới nhất</span>
+            </div>
+            <div class="mt-4 overflow-x-auto">
+                <table class="w-full min-w-[720px] text-left text-sm">
+                    <thead class="bg-slate-100 text-xs uppercase text-slate-500">
+                        <tr>
+                            <th class="px-4 py-3">Nguyện vọng</th>
+                            <th class="px-4 py-3">Ngành</th>
+                            <th class="px-4 py-3">Phương thức</th>
+                            <th class="px-4 py-3">Tổ hợp</th>
+                            <th class="px-4 py-3">Điểm xét</th>
+                            <th class="px-4 py-3">Điểm chuẩn</th>
+                            <th class="px-4 py-3">Kết quả</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100" th:if="${admissionResults != null}">
+                        <tr th:each="item : ${admissionResults}">
+                            <td class="px-4 py-3" th:text="${item.preference}">NV1</td>
+                            <td class="px-4 py-3" th:text="${item.major}">CNTT</td>
+                            <td class="px-4 py-3" th:text="${item.method}">THPT</td>
+                            <td class="px-4 py-3" th:text="${item.combo}">A01</td>
+                            <td class="px-4 py-3" th:text="${item.score}">26.50</td>
+                            <td class="px-4 py-3" th:text="${item.cutoff}">24.00</td>
+                            <td class="px-4 py-3">
+                                <span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700"
+                                    th:text="${item.status}">Trúng tuyển</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody th:if="${admissionResults == null}">
+                        <tr>
+                            <td class="px-4 py-4 text-sm text-slate-500" colspan="7">
+                                Chưa có dữ liệu kết quả. Vui lòng kiểm tra lại thông tin đăng nhập.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="rounded-2xl border bg-white p-6 shadow-sm">
+            <h2 class="text-lg font-semibold">Chi tiết điểm xét tuyển</h2>
+            <p class="mt-2 text-sm text-slate-600">
+                Bảng điểm theo phương thức và tổ hợp môn ứng với từng nguyện vọng của thí sinh.
+            </p>
+            <div class="mt-4 overflow-x-auto">
+                <table class="w-full min-w-[720px] text-left text-sm">
+                    <thead class="bg-slate-100 text-xs uppercase text-slate-500">
+                        <tr>
+                            <th class="px-4 py-3">Nguyện vọng</th>
+                            <th class="px-4 py-3">Phương thức</th>
+                            <th class="px-4 py-3">Tổ hợp môn</th>
+                            <th class="px-4 py-3">Điểm môn</th>
+                            <th class="px-4 py-3">Điểm cộng</th>
+                            <th class="px-4 py-3">Tổng điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100" th:if="${scoreDetails != null}">
+                        <tr th:each="detail : ${scoreDetails}">
+                            <td class="px-4 py-3" th:text="${detail.preference}">NV1</td>
+                            <td class="px-4 py-3" th:text="${detail.method}">Xét học bạ</td>
+                            <td class="px-4 py-3" th:text="${detail.combo}">D01</td>
+                            <td class="px-4 py-3" th:text="${detail.subjectScores}">Toán 8.5, Văn 8.0</td>
+                            <td class="px-4 py-3" th:text="${detail.bonus}">0.5</td>
+                            <td class="px-4 py-3" th:text="${detail.total}">27.0</td>
+                        </tr>
+                    </tbody>
+                    <tbody th:if="${scoreDetails == null}">
+                        <tr>
+                            <td class="px-4 py-4 text-sm text-slate-500" colspan="6">
+                                Chưa có dữ liệu điểm xét tuyển. Hãy sử dụng form tra cứu chi tiết điểm.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

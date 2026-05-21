@@ -35,6 +35,8 @@ public class MajorsPageController implements Initializable {
 
     @FXML
     private TableColumn<MajorRow, String> colChiTieu;
+    @FXML
+    private TableColumn<MajorRow, String> colSoNguyenVong;
 
     private final ObservableList<MajorRow> items = FXCollections.observableArrayList();
     private final MajorService majorService = new MajorService();
@@ -63,6 +65,7 @@ public class MajorsPageController implements Initializable {
         colMaNganh.setCellValueFactory(v -> v.getValue().maNganhProperty());
         colTenNganh.setCellValueFactory(v -> v.getValue().tenNganhProperty());
         colChiTieu.setCellValueFactory(v -> v.getValue().chiTieuProperty());
+        colSoNguyenVong.setCellValueFactory(v -> v.getValue().soNguyenVongProperty());
 
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(items);
@@ -178,7 +181,8 @@ public class MajorsPageController implements Initializable {
         return new MajorRow(
                 ControllerSupport.safeString(data.get("majorCode")),
                 ControllerSupport.safeString(data.get("majorName")),
-                ControllerSupport.safeString(data.get("quota"))
+                ControllerSupport.safeString(data.get("quota")),
+                ControllerSupport.safeString(data.get("admissionPreferenceCount"))
         );
     }
 
