@@ -78,6 +78,9 @@ public class Applicant {
     @OneToOne(mappedBy = "applicant", fetch = FetchType.EAGER)
     PriorityBonusPoint priorityBonusPoint;
 
+    @OneToOne(mappedBy = "applicant", fetch = FetchType.EAGER)
+    ExamScore examScore;
+
     public String getFullName() {
         return (lastName != null ? lastName : "") + " " + (firstName != null ? firstName : "");
     }

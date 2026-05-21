@@ -22,6 +22,15 @@ public class AdmissionPreferenceService extends BaseApiService {
         );
     }
 
+    public ApiResponse<Map<String, Long>> count() {
+        return get(
+                URLUtil.ADMISSION_PREFERENCE.COUNT,
+                true,
+                new TypeReference<ApiResponse<Map<String, Long>>>() {
+                }
+        );
+    }
+
     public ApiResponse<Map<String, Object>> getPaginated(int page, int size, String sortBy, String sortDir) {
         return get(
                 URLUtil.ADMISSION_PREFERENCE.GET_PAGINATED(page, size, sortBy, sortDir),

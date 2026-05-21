@@ -21,11 +21,11 @@ public class AdmissionPreference {
     @Column(name = "idnv")
     Integer id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "nn_cccd", referencedColumnName = "cccd", nullable = false)
     Applicant applicant;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "manganh", referencedColumnName = "manganh", nullable = false)
     Major major;
 

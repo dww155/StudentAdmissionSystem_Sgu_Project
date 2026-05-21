@@ -13,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/majors")
@@ -44,6 +45,12 @@ public class MajorController {
     public ApiResponse<List<MajorResponse>> getAllMajors() {
         List<MajorResponse> response = majorService.getAllMajors();
         return new ApiResponse<>(response, "Get all majors successfully");
+    }
+
+    @GetMapping("/count")
+    public ApiResponse<Map<String, Long>> getMajorCount() {
+        long count = majorService.getMajorCount();
+        return new ApiResponse<>(Map.of("count", count), "Get major count successfully");
     }
 
     @PutMapping("/{id}")

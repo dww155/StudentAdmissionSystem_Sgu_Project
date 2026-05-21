@@ -5,15 +5,15 @@ import com.sgu.student_admission_system.dto.Authentication.IntrospectRequest;
 import com.sgu.student_admission_system.dto.Authentication.IntrospectResponse;
 import com.sgu.student_admission_system.dto.Authentication.LoginRequest;
 import com.sgu.student_admission_system.dto.Authentication.LoginResponse;
+import com.sgu.student_admission_system.dto.user.ChangePasswordRequest;
 import com.sgu.student_admission_system.service.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
@@ -34,5 +34,11 @@ public class AuthenticationController {
         IntrospectResponse response = authenticationService.introspect(request);
 
         return new ApiResponse(response, "Introspect successfully");
+    }
+
+    @PostMapping("/changePassword")
+    public ApiResponse<Void> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        authenticationService.changePassword(request);
+        return new ApiResponse<>(null, "Changed Password successfully");
     }
 }
