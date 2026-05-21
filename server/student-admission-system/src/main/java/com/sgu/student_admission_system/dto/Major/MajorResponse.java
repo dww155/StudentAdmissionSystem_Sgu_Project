@@ -29,4 +29,6 @@ public class MajorResponse {
     Integer competencyExamCount;
     Integer vsatCount;
     String highSchoolExamCount;
+
+
 }

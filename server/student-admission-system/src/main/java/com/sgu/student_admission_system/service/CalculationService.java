@@ -17,13 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -145,16 +139,25 @@ public class CalculationService {
             String bestSubjectGroup = null;
 
             for (MajorSubjectGroup majorSubjectGroup: majorSubjectGroups) {
+
+                // get subject and weight list
                 List<String> subjects = List.of(majorSubjectGroup.getMon1(), majorSubjectGroup.getMon2(), majorSubjectGroup.getMon3());
                 List<Integer> weights = List.of(majorSubjectGroup.getSubject1Weight(), majorSubjectGroup.getSubject2Weight(), majorSubjectGroup.getSubject3Weight());
+
+                // print subject group
+//                String subjectGroupCode = majorSubjectGroup.getSubjectCombination() != null
+//                        ? majorSubjectGroup.getSubjectCombination().getCode()
+//                        : "UNKNOWN_GROUP";
+//                System.out.println("SUBJECT_GROUP_CODE: " + subjectGroupCode);
 
                 BigDecimal subjectGroupBonus = BigDecimal.ZERO;
                 BigDecimal weightedRawScore = BigDecimal.ZERO;
                 boolean hasSubjectBonusApplied = false;
-
+                
                 for (int i = 0; i < subjects.size(); i++) {
                     String subject = normalizeSubject(subjects.get(i));
                     int weight = weights.get(i) == null ? 1 : weights.get(i);
+
                     BigDecimal subjectScore = resolveSubjectScore(subject, examScoresBySubject, bestVsatConvertedBySubject, examScore, englishCertification, majorSubjectGroup);
 
                     BigDecimal perSubjectBonus = resolveSubjectPriorityBonus(priorityBonusPoint, subject, subjects);
@@ -163,6 +166,8 @@ public class CalculationService {
                         hasSubjectBonusApplied = true;
                     }
 
+                    // print subject score
+//                    System.out.println("\t " + " | SUBJECT: " + subject + " | SCORE: " + subjectScore);
                     weightedRawScore = weightedRawScore.add(subjectScore.multiply(BigDecimal.valueOf(weight)));
                 }
                 if (!hasSubjectBonusApplied) {
@@ -180,16 +185,27 @@ public class CalculationService {
                 }
             }
 
-            System.out.println(bestAdmissionScore);
-            System.out.println(bestRawScore);
-            System.out.println(bestBonusScore);
-            System.out.println(bestSubjectGroup);
-
             preference.setExamScore(bestRawScore.setScale(5, RoundingMode.HALF_UP));
             preference.setBonusScore(bestBonusScore.setScale(2, RoundingMode.HALF_UP));
             preference.setAdmissionScore((bestAdmissionScore == null ? BigDecimal.ZERO : bestAdmissionScore).setScale(5, RoundingMode.HALF_UP));
             preference.setSubjectGroup(bestSubjectGroup);
             preference.setMethod(examScore.getMethod());
+
+            // print all information
+            System.out.println("===== BEST SUBJECT GROUP RESULT =====");
+            System.out.println("APPLICANT_ID: " + applicant.getId());
+            System.out.println("PREFERENCE_ID: " + preference.getId());
+            System.out.println("PRIORITY_ORDER: " + preference.getPriorityOrder());
+            System.out.println("BEST_SUBJECT_GROUP: " + preference.getSubjectGroup());
+            System.out.println("METHOD: " + preference.getMethod());
+            System.out.println("EXAM_SCORE: " + preference.getExamScore());
+            System.out.println("BONUS_SCORE: " + preference.getBonusScore());
+            System.out.println("ADMISSION_SCORE: " + preference.getAdmissionScore());
+
+//            for (Map.Entry<String, BigDecimal> entry : bestSubjectScores.entrySet()) {
+//                System.out.println("BEST_GROUP_SUBJECT_SCORE_" + entry.getKey() + ": " + entry.getValue());
+//            }
+//            System.out.println("===== END BEST SUBJECT GROUP RESULT =====");
         }
     }
 
@@ -213,6 +229,10 @@ public class CalculationService {
         putIfNotNull(result, "NL1", examScore.getNl1());
         putIfNotNull(result, "NK1", examScore.getNk1());
         putIfNotNull(result, "NK2", examScore.getNk2());
+
+//        result.forEach((key, value) ->
+//                System.out.println(key + " = " + value)
+//        );
         return result;
     }
 
@@ -276,7 +296,7 @@ public class CalculationService {
         BigDecimal bestVsatScore = bestVsatConvertedBySubject.get(subject);
         BigDecimal bestScore = bestVsatScore == null ? baseExamScore : baseExamScore.max(bestVsatScore);
 
-        if ("N1".equals(subject) || Boolean.TRUE.equals(majorSubjectGroup.getN1())) {
+        if ("N1".equals(subject) && Boolean.TRUE.equals(majorSubjectGroup.getN1())) {
             BigDecimal certScore = englishCertification != null ? englishCertification.getConversionScore() : null;
             BigDecimal n1Thi = examScore.getN1Thi();
             if (certScore != null && n1Thi != null) {
@@ -290,6 +310,7 @@ public class CalculationService {
             }
         }
 
+//        System.out.println("BEST: " + bestScore);
         return bestScore;
     }
 
