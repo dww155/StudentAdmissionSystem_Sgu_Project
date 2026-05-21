@@ -7,11 +7,13 @@ public class MajorRow {
     private final ReadOnlyStringWrapper maNganh = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper tenNganh = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper chiTieu = new ReadOnlyStringWrapper();
+    private final ReadOnlyStringWrapper soNguyenVong = new ReadOnlyStringWrapper();
 
-    public MajorRow(String maNganh, String tenNganh, String chiTieu) {
+    public MajorRow(String maNganh, String tenNganh, String chiTieu, String soNguyenVong) {
         this.maNganh.set(maNganh);
         this.tenNganh.set(tenNganh);
         this.chiTieu.set(chiTieu);
+        this.soNguyenVong.set(soNguyenVong);
     }
 
     public ReadOnlyStringProperty maNganhProperty() {
@@ -25,5 +27,8 @@ public class MajorRow {
     public ReadOnlyStringProperty chiTieuProperty() {
         return chiTieu.getReadOnlyProperty();
     }
-}
 
+    public ReadOnlyStringProperty soNguyenVongProperty() {
+        return soNguyenVong.getReadOnlyProperty();
+    }
+}

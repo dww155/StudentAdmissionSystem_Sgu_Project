@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.sgu.admission_desktop.controller.MajorSubjectsPageController"
       styleClass="page" spacing="14.0">
-    <VBox styleClass="card" spacing="12.0">
-        <HBox styleClass="toolbar" spacing="10.0">
-            <Label text="Lien ket Nganh - To hop mon" styleClass="card-title"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Import" onAction="#onImport" styleClass="btn-success"/>
-            <Button text="Them lien ket" onAction="#onAddNew" styleClass="btn-primary"/>
-        </HBox>
-        <TableView fx:id="table" styleClass="table">
-            <columns>
-                <TableColumn fx:id="colMaNganh" text="Ma nganh"/>
-                <TableColumn fx:id="colTenNganh" text="Ten nganh"/>
-                <TableColumn fx:id="colMaToHop" text="Ma to hop"/>
-                <TableColumn fx:id="colTenToHop" text="Ten to hop"/>
-            </columns>
-        </TableView>
-    </VBox>
+    <HBox spacing="12.0" VBox.vgrow="ALWAYS">
+        <VBox styleClass="card" spacing="12.0" HBox.hgrow="ALWAYS">
+            <Label text="Danh sach nganh" styleClass="card-title"/>
+            <TableView fx:id="majorTable" styleClass="table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colMaNganh" text="Ma nganh"/>
+                    <TableColumn fx:id="colTenNganh" text="Ten nganh"/>
+                </columns>
+            </TableView>
+        </VBox>
+
+        <VBox styleClass="card" spacing="12.0" HBox.hgrow="ALWAYS">
+            <Label fx:id="rightPanelTitle" text="To hop mon cua nganh da chon" styleClass="card-title"/>
+            <ListView fx:id="subjectGroupList" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </HBox>
 </VBox>

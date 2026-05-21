@@ -96,11 +96,10 @@ public class VsatResultService {
         return vsatResultMapper.toVsatResultResponse(vsatResult);
     }
 
-    public VsatResultResponse getVsatResultByCccd(String cccd) {
-        VsatResult vsatResult = vsatResultRepository.findByApplicant_Cccd(cccd)
-                .orElseThrow(() -> new AppException(ErrorCode.VSAT_RESULT_NOT_FOUND));
+    public List<VsatResultResponse> getVsatResultByCccd(String cccd) {
+        List<VsatResult> vsatResults = vsatResultRepository.findAllByApplicant_Cccd(cccd);
 
-        return vsatResultMapper.toVsatResultResponse(vsatResult);
+        return vsatResults.stream().map(vsatResultMapper::toVsatResultResponse).toList();
     }
 
     public List<VsatResultResponse> getAllVsatResults() {

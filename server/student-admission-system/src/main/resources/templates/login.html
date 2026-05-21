@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Đăng nhập tra cứu</title>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-800">
+    <header class="border-b bg-white">
+        <div class="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
+            <div>
+                <h1 class="text-xl font-semibold">Tra cứu tuyển sinh</h1>
+                <p class="text-sm text-slate-500">Đăng nhập để xem kết quả xét tuyển theo nguyện vọng.</p>
+            </div>
+            <a href="/" class="text-sm font-medium text-blue-600 hover:text-blue-700">Về trang chủ</a>
+        </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-5xl space-y-6 px-6 py-10">
+        <div class="flex flex-wrap gap-3">
+            <a href="/login?mode=login"
+                class="rounded-full border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50">
+                Tra cứu kết quả
+            </a>
+            <a href="/login?mode=lookup"
+                class="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+                Tra cứu điểm xét tuyển
+            </a>
+        </div>
+        <section id="login-section" class="rounded-2xl border bg-white p-6 shadow-sm">
+            <h2 class="text-lg font-semibold">Đăng nhập thí sinh</h2>
+            <p class="mt-2 text-sm text-slate-600">
+                Nhập CCCD và ngày sinh để xem kết quả trúng tuyển/trượt theo từng nguyện vọng.
+            </p>
+            <form class="mt-6 space-y-4" action="#" th:action="@{/login}" th:object="${student}" method="post">
+                <div class="space-y-1">
+                    <label class="text-sm font-medium" for="cccd">CCCD</label>
+                    <input id="cccd" type="text" name="cccd" required
+                        placeholder="Nhập số CCCD"
+                        class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-sm font-medium" for="birth">Ngày sinh (ddmmyyyy)</label>
+                    <input id="birth" type="text" name="birth" required inputmode="numeric" pattern="\d{8}"
+                        placeholder="Ví dụ: 25072007"
+                        class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                    <p class="text-xs text-slate-500">Nhập 8 số liền nhau theo định dạng ngày/tháng/năm.</p>
+                </div>
+                <button type="submit"
+                    class="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                    Đăng nhập
+                </button>
+                <p class="text-sm text-red-600" th:if="${error}" th:text="${error}"></p>
+            </form>
+        </section>
+
+        <section id="lookup-section" class="rounded-2xl border bg-white p-6 shadow-sm">
+            <h2 class="text-lg font-semibold">Tra cứu cách tính điểm xét tuyển</h2>
+            <p class="mt-2 text-sm text-slate-600">
+                Nhập CCCD và thông tin điểm để xem điểm quy đổi, kết quả đạt/không đạt theo phương thức xét tuyển.
+            </p>
+            <div class="mt-6 space-y-6">
+                <div class="space-y-1">
+                    <label class="text-sm font-medium" for="lookupCccd">CCCD</label>
+                    <input id="lookupCccd" type="text" name="cccd" required placeholder="Nhập số CCCD"
+                        class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <button type="button" data-method="dgnl"
+                        class="method-tab rounded-full border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50">
+                        Phương thức ĐGNL
+                    </button>
+                    <button type="button" data-method="vsat"
+                        class="method-tab rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+                        VSAT / THPT
+                    </button>
+                </div>
+
+                <div id="method-dgnl" class="space-y-5">
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="dgnlScore">Điểm thi ĐGNL (0-1200)</label>
+                            <input id="dgnlScore" type="number" min="0" max="1200" step="0.01"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="dgnlMajor">Ngành xét tuyển</label>
+                            <select id="dgnlMajor"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option>Công nghệ thông tin</option>
+                                <option>Kinh tế</option>
+                                <option>Ngôn ngữ Anh</option>
+                                <option>Quản trị kinh doanh</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="dgnlPriority">Đối tượng ưu tiên</label>
+                            <select id="dgnlPriority"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option value="0">Không ưu tiên</option>
+                                <option value="1">Ưu tiên 1 (1.0 điểm)</option>
+                                <option value="2">Ưu tiên 2 (2.0 điểm)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="dgnlArea">Khu vực ưu tiên</label>
+                            <select id="dgnlArea"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option value="0">KV3 (0 điểm)</option>
+                                <option value="0.25">KV2-NT (0.25 điểm)</option>
+                                <option value="0.5">KV2 (0.5 điểm)</option>
+                                <option value="0.75">KV1 (0.75 điểm)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="dgnlBonus">Điểm cộng (nếu có)</label>
+                            <input id="dgnlBonus" type="number" min="0" step="0.01" placeholder="0"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="dgnlThreshold">Điểm ngưỡng</label>
+                            <input id="dgnlThreshold" type="number" min="0" step="0.01" placeholder="Ví dụ: 20"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="dgnlCutoff">Điểm trúng tuyển (nếu có)</label>
+                            <input id="dgnlCutoff" type="number" min="0" step="0.01" placeholder="Ví dụ: 24"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="dgnlCombo">Tổ hợp gốc</label>
+                            <select id="dgnlCombo"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option>A00 (Toán - Lý - Hóa)</option>
+                                <option>A01 (Toán - Lý - Anh)</option>
+                                <option>D01 (Toán - Văn - Anh)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                        <div class="grid gap-3 md:grid-cols-3">
+                            <div>
+                                <p class="text-xs uppercase text-slate-500">Điểm quy đổi thang 30</p>
+                                <p class="mt-1 text-base font-semibold" id="dgnlConverted">0.00</p>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase text-slate-500">Tổng điểm xét tuyển</p>
+                                <p class="mt-1 text-base font-semibold" id="dgnlTotal">0.00</p>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase text-slate-500">Kết quả</p>
+                                <p class="mt-1 text-base font-semibold" id="dgnlStatus">---</p>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-xs text-slate-500">
+                            * Kết quả tính toán chỉ để minh họa giao diện (frontend-only).
+                        </p>
+                    </div>
+                </div>
+
+                <div id="method-vsat" class="space-y-5">
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatScale">Thang điểm</label>
+                            <select id="vsatScale"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option value="10">THPT (thang 10)</option>
+                                <option value="150">VSAT (thang 150)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatMajor">Ngành xét tuyển</label>
+                            <select id="vsatMajor"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option>Công nghệ thông tin</option>
+                                <option>Kinh tế</option>
+                                <option>Marketing</option>
+                                <option>Ngôn ngữ Anh</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatSubject1">Điểm môn 1</label>
+                            <input id="vsatSubject1" type="number" min="0" step="0.01"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatSubject2">Điểm môn 2</label>
+                            <input id="vsatSubject2" type="number" min="0" step="0.01"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatSubject3">Điểm môn 3 (Tiếng Anh nếu có)</label>
+                            <input id="vsatSubject3" type="number" min="0" step="0.01"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatEnglishConverted">Điểm tiếng Anh quy đổi</label>
+                            <input id="vsatEnglishConverted" type="number" min="0" step="0.01" placeholder="(nếu có)"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatPriority">Đối tượng ưu tiên</label>
+                            <select id="vsatPriority"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option value="0">Không ưu tiên</option>
+                                <option value="1">Ưu tiên 1 (1.0 điểm)</option>
+                                <option value="2">Ưu tiên 2 (2.0 điểm)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatArea">Khu vực ưu tiên</label>
+                            <select id="vsatArea"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option value="0">KV3 (0 điểm)</option>
+                                <option value="0.25">KV2-NT (0.25 điểm)</option>
+                                <option value="0.5">KV2 (0.5 điểm)</option>
+                                <option value="0.75">KV1 (0.75 điểm)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatBonusSubject">Môn có điểm cộng</label>
+                            <select id="vsatBonusSubject"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option>Không có</option>
+                                <option>Môn 1</option>
+                                <option>Môn 2</option>
+                                <option>Môn 3</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatBonus">Điểm cộng</label>
+                            <input id="vsatBonus" type="number" min="0" step="0.01" placeholder="0"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium" for="vsatCombo">Tổ hợp môn</label>
+                            <select id="vsatCombo"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <option>A00 (Toán - Lý - Hóa)</option>
+                                <option>A01 (Toán - Lý - Anh)</option>
+                                <option>D01 (Toán - Văn - Anh)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                        <div class="grid gap-3 md:grid-cols-3">
+                            <div>
+                                <p class="text-xs uppercase text-slate-500">Điểm quy đổi thang 10</p>
+                                <p class="mt-1 text-base font-semibold" id="vsatConverted">0.00</p>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase text-slate-500">Tổng điểm xét tuyển</p>
+                                <p class="mt-1 text-base font-semibold" id="vsatTotal">0.00</p>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase text-slate-500">Kết quả THM</p>
+                                <p class="mt-1 text-base font-semibold" id="vsatStatus">---</p>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-xs text-slate-500">
+                            * Thông tin chỉ để minh họa giao diện, backend sẽ xử lý chi tiết sau.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get("mode") || "login";
+        const loginSection = document.getElementById("login-section");
+        const lookupSection = document.getElementById("lookup-section");
+        if (mode === "lookup") {
+            loginSection.classList.add("hidden");
+            lookupSection.classList.remove("hidden");
+        } else {
+            lookupSection.classList.add("hidden");
+            loginSection.classList.remove("hidden");
+        }
+
+        const tabs = document.querySelectorAll(".method-tab");
+        const methodSections = {
+            dgnl: document.getElementById("method-dgnl"),
+            vsat: document.getElementById("method-vsat")
+        };
+
+        const setActiveTab = (target) => {
+            Object.entries(methodSections).forEach(([key, section]) => {
+                section.classList.toggle("hidden", key !== target);
+            });
+            tabs.forEach((tab) => {
+                const isActive = tab.dataset.method === target;
+                tab.classList.toggle("border-blue-600", isActive);
+                tab.classList.toggle("text-blue-600", isActive);
+                tab.classList.toggle("border-slate-200", !isActive);
+                tab.classList.toggle("text-slate-600", !isActive);
+            });
+        };
+
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => setActiveTab(tab.dataset.method));
+        });
+        setActiveTab("dgnl");
+
+        const toNumber = (value) => {
+            const parsed = parseFloat(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        };
+
+        const updateDgnl = () => {
+            const score = toNumber(document.getElementById("dgnlScore").value);
+            const priority = toNumber(document.getElementById("dgnlPriority").value);
+            const area = toNumber(document.getElementById("dgnlArea").value);
+            const bonus = toNumber(document.getElementById("dgnlBonus").value);
+            const threshold = toNumber(document.getElementById("dgnlThreshold").value);
+            const cutoff = toNumber(document.getElementById("dgnlCutoff").value);
+            const converted = (score / 1200) * 30;
+            const total = converted + priority + area + bonus;
+
+            document.getElementById("dgnlConverted").textContent = converted.toFixed(2);
+            document.getElementById("dgnlTotal").textContent = total.toFixed(2);
+
+            let status = "Chưa xác định";
+            if (threshold > 0) {
+                status = total >= threshold ? "Đạt ngưỡng" : "Không đạt ngưỡng";
+            }
+            if (cutoff > 0) {
+                status = total >= cutoff ? "Trúng tuyển" : "Không trúng tuyển";
+            }
+            document.getElementById("dgnlStatus").textContent = status;
+        };
+
+        const updateVsat = () => {
+            const scale = toNumber(document.getElementById("vsatScale").value);
+            const s1 = toNumber(document.getElementById("vsatSubject1").value);
+            const s2 = toNumber(document.getElementById("vsatSubject2").value);
+            const s3 = toNumber(document.getElementById("vsatSubject3").value);
+            const englishConverted = toNumber(document.getElementById("vsatEnglishConverted").value);
+            const priority = toNumber(document.getElementById("vsatPriority").value);
+            const area = toNumber(document.getElementById("vsatArea").value);
+            const bonus = toNumber(document.getElementById("vsatBonus").value);
+
+            const scaleFactor = scale === 150 ? 10 / 150 : 1;
+            const c1 = s1 * scaleFactor;
+            const c2 = s2 * scaleFactor;
+            const rawThird = englishConverted > 0 ? englishConverted : s3;
+            const c3 = rawThird * scaleFactor;
+
+            const convertedTotal = c1 + c2 + c3;
+            const total = convertedTotal + priority + area + bonus;
+
+            document.getElementById("vsatConverted").textContent = convertedTotal.toFixed(2);
+            document.getElementById("vsatTotal").textContent = total.toFixed(2);
+            document.getElementById("vsatStatus").textContent = total > 0 ? "Đã tính" : "---";
+        };
+
+        [
+            "dgnlScore",
+            "dgnlPriority",
+            "dgnlArea",
+            "dgnlBonus",
+            "dgnlThreshold",
+            "dgnlCutoff",
+            "vsatScale",
+            "vsatSubject1",
+            "vsatSubject2",
+            "vsatSubject3",
+            "vsatEnglishConverted",
+            "vsatPriority",
+            "vsatArea",
+            "vsatBonus"
+        ].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener("input", () => {
+                    updateDgnl();
+                    updateVsat();
+                });
+            }
+        });
+
+        updateDgnl();
+        updateVsat();
+    </script>
+</body>
+
+</html>

@@ -17,6 +17,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 
 import java.net.URL;
 import java.util.LinkedHashMap;
@@ -56,6 +57,9 @@ public class WishesPageController implements Initializable {
 
     @FXML
     private Label pageInfoLabel;
+
+    @FXML
+    private TextField searchField;
 
     private final ObservableList<WishRow> items = FXCollections.observableArrayList();
     private final AdmissionPreferenceService admissionPreferenceService = new AdmissionPreferenceService();
@@ -109,6 +113,33 @@ public class WishesPageController implements Initializable {
             return;
         }
         loadWishes(currentPage + 1);
+    }
+
+    @FXML
+    private void onSearchByCccd() {
+        String cccd = ControllerSupport.trimToNull(searchField == null ? null : searchField.getText());
+        if (cccd == null) {
+            loadWishes(0);
+            return;
+        }
+
+        try {
+            majorNameByCode = loadMajorNames();
+            ApiResponse<List<AdmissionPreferenceResponse>> response = admissionPreferenceService.getAll();
+            List<AdmissionPreferenceResponse> wishes = response.getData() == null ? List.of() : response.getData();
+
+            List<AdmissionPreferenceResponse> filtered = wishes.stream()
+                    .filter(wish -> cccd.equals(ControllerSupport.safeString(ControllerSupport.toMap(wish).get("cccd"))))
+                    .toList();
+
+            items.setAll(filtered.stream().map(this::toRow).toList());
+            currentPage = 0;
+            totalPages = 1;
+            totalElements = filtered.size();
+            updatePaginationControls();
+        } catch (Exception e) {
+            ControllerSupport.showError("Search wishes by CCCD failed", ControllerSupport.extractMessage(e));
+        }
     }
 
     private void loadWishes(int requestedPage) {
@@ -356,3 +387,4 @@ public class WishesPageController implements Initializable {
         return ControllerSupport.trimToNull(value);
     }
 }
+

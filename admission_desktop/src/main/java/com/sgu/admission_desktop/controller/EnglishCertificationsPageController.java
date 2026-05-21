@@ -15,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -51,6 +52,8 @@ public class EnglishCertificationsPageController implements Initializable {
 
     @FXML
     private Label pageInfoLabel;
+    @FXML
+    private TextField searchField;
 
     private final ObservableList<EnglishCertificationRow> items = FXCollections.observableArrayList();
     private final EnglishCertificationService englishCertificationService = new EnglishCertificationService();
@@ -99,6 +102,36 @@ public class EnglishCertificationsPageController implements Initializable {
             return;
         }
         loadEnglishCertifications(currentPage + 1);
+    }
+
+    @FXML
+    private void onSearchByCccd() {
+        String cccd = ControllerSupport.trimToNull(searchField == null ? null : searchField.getText());
+        if (cccd == null) {
+            loadEnglishCertifications(0);
+            return;
+        }
+
+        try {
+            ApiResponse<EnglishCertificationResponse> response = englishCertificationService.getByCccd(cccd);
+            EnglishCertificationResponse certification = response.getData();
+            if (certification == null) {
+                items.clear();
+                currentPage = 0;
+                totalPages = 1;
+                totalElements = 0;
+                updatePaginationControls();
+                return;
+            }
+
+            items.setAll(toRow(certification));
+            currentPage = 0;
+            totalPages = 1;
+            totalElements = 1;
+            updatePaginationControls();
+        } catch (Exception e) {
+            ControllerSupport.showError("Search English certification by CCCD failed", ControllerSupport.extractMessage(e));
+        }
     }
 
     private void loadEnglishCertifications(int requestedPage) {

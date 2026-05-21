@@ -33,7 +33,7 @@
                 <Button text="Diem THPT" onAction="#onNav" userData="scores" styleClass="sidebar-item"/>
                 <Button text="Ket qua VSAT" onAction="#onNav" userData="vsat-results" styleClass="sidebar-item"/>
                 <Button text="Chung chi tieng Anh" onAction="#onNav" userData="english-certifications" styleClass="sidebar-item"/>
-                <Button text="Diem cong" onAction="#onNav" userData="bonus" styleClass="sidebar-item"/>
+<!--                <Button text="Diem cong" onAction="#onNav" userData="bonus" styleClass="sidebar-item"/>-->
                 <Button text="Diem cong uu tien" onAction="#onNav" userData="priority-bonus-points" styleClass="sidebar-item"/>
                 <Button text="Nguyen vong" onAction="#onNav" userData="wishes" styleClass="sidebar-item"/>
                 <Button text="Bang quy doi" onAction="#onNav" userData="conversion" styleClass="sidebar-item"/>

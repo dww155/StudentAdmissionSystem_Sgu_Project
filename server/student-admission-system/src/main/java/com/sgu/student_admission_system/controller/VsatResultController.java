@@ -49,8 +49,8 @@ public class VsatResultController {
     }
 
     @GetMapping("/cccd={cccd}")
-    public ApiResponse<VsatResultResponse> getVsatResultByCccd(@PathVariable String cccd) {
-        VsatResultResponse response = vsatResultService.getVsatResultByCccd(cccd);
+    public ApiResponse<List<VsatResultResponse>> getVsatResultByCccd(@PathVariable String cccd) {
+        List<VsatResultResponse> response = vsatResultService.getVsatResultByCccd(cccd);
         return new ApiResponse<>(response, "Get vsat result successfully");
     }
 
