@@ -1,47 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns:fx="http://javafx.com/fxml" styleClass="page" spacing="16.0">
-    <HBox spacing="14.0">
-        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
-            <Label text="Tổng thí sinh" styleClass="stat-label"/>
-            <Label text="0" styleClass="stat-value"/>
-            <Label text="+12% so với tuần trước" styleClass="stat-note-positive"/>
-        </VBox>
-        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
-            <Label text="Ngành tuyển sinh" styleClass="stat-label"/>
-            <Label text="0" styleClass="stat-value"/>
-            <Label text="Đang hoạt động" styleClass="stat-note"/>
-        </VBox>
-        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
-            <Label text="Nguyện vọng" styleClass="stat-label"/>
-            <Label text="0" styleClass="stat-value"/>
-            <Label text="Đang xử lý" styleClass="stat-note"/>
-        </VBox>
-        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
-            <Label text="Đã trúng tuyển" styleClass="stat-label"/>
-            <Label text="0" styleClass="stat-value"/>
-            <Label text="Xác nhận nhập học" styleClass="stat-note"/>
-        </VBox>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.sgu.admission_desktop.controller.DashboardController"
+      styleClass="page"
+      spacing="16.0">
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label text="Tong quan he thong tuyen sinh" styleClass="card-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Lam moi thong ke" styleClass="btn-primary" onAction="#onRefreshStats"/>
+        <Button fx:id="recalculateButton"
+                text="Tinh lai diem tat ca thi sinh"
+                styleClass="btn-success"
+                onAction="#onRecalculateAllApplicants"/>
     </HBox>
 
-    <HBox spacing="16.0">
-        <VBox styleClass="card" spacing="10.0" HBox.hgrow="ALWAYS">
-            <Label text="Thống kê điểm theo loại" styleClass="card-title"/>
-            <Label text="(Demo) Sẽ hiển thị biểu đồ ở đây" styleClass="muted"/>
+    <Label fx:id="recalcStatusLabel" text="San sang tinh lai diem." styleClass="muted"/>
+
+    <HBox spacing="14.0">
+        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
+            <Label text="Tong thi sinh" styleClass="stat-label"/>
+            <Label fx:id="totalApplicantsLabel" text="0" styleClass="stat-value"/>
+            <Label text="Du lieu tu bang applicant" styleClass="stat-note"/>
         </VBox>
-        <VBox styleClass="card" spacing="10.0" HBox.hgrow="ALWAYS">
-            <Label text="Ngành có nhiều nguyện vọng nhất" styleClass="card-title"/>
-            <Label text="Chưa có dữ liệu" styleClass="muted"/>
+        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
+            <Label text="Nganh tuyen sinh" styleClass="stat-label"/>
+            <Label fx:id="totalMajorsLabel" text="0" styleClass="stat-value"/>
+            <Label text="Tong so nganh dang quan ly" styleClass="stat-note"/>
+        </VBox>
+        <VBox styleClass="stat-card" spacing="6.0" HBox.hgrow="ALWAYS">
+            <Label text="Nguyen vong" styleClass="stat-label"/>
+            <Label fx:id="totalWishesLabel" text="0" styleClass="stat-value"/>
+            <Label text="Tong nguyen vong da nhap" styleClass="stat-note"/>
         </VBox>
     </HBox>
 
     <VBox styleClass="card" spacing="10.0">
-        <Label text="Hoạt động gần đây" styleClass="card-title"/>
-        <Label text="Hệ thống sẵn sàng hoạt động" styleClass="muted"/>
+        <Label text="Huong dan nhanh" styleClass="card-title"/>
+        <Label text="1) Bam 'Tinh lai diem tat ca thi sinh' de goi API POST /calculations/applicants/recalculate-all." styleClass="muted" wrapText="true"/>
+        <Label text="2) Theo doi ket qua xu ly tai dong trang thai phia tren." styleClass="muted" wrapText="true"/>
+        <Label text="3) Bam 'Lam moi thong ke' neu ban muon cap nhat so lieu moi nhat." styleClass="muted" wrapText="true"/>
     </VBox>
 </VBox>
-

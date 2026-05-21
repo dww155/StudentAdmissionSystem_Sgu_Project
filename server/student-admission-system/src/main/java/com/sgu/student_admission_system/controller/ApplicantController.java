@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -56,6 +57,12 @@ public class ApplicantController {
     public ApiResponse<List<ApplicantResponse>> getAllApplicants() {
         List<ApplicantResponse> response = applicantService.getAllApplicants();
         return new ApiResponse<>(response, "Get all applicants successfully");
+    }
+
+    @GetMapping("/count")
+    public ApiResponse<Map<String, Long>> getApplicantCount() {
+        long count = applicantService.getApplicantCount();
+        return new ApiResponse<>(Map.of("count", count), "Get applicant count successfully");
     }
 
     @GetMapping("/paginated")

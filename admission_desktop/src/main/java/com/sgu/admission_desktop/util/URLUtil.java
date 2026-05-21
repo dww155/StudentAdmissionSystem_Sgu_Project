@@ -49,6 +49,7 @@ public final class URLUtil {
         }
 
         public static final String GET_ALL = build("/majors");
+        public static final String COUNT = build("/majors/count");
         public static final String CREATE = build("/majors");
         public static final String CREATE_BULK = build("/majors/bulk");
 
@@ -201,6 +202,7 @@ public final class URLUtil {
         }
 
         public static final String GET_ALL = build("/applicant");
+        public static final String COUNT = build("/applicant/count");
         public static final String CREATE = build("/applicant");
         public static final String CREATE_BULK = build("/applicant/bulk");
 
@@ -231,6 +233,7 @@ public final class URLUtil {
         }
 
         public static final String GET_ALL = build("/admission-preferences");
+        public static final String COUNT = build("/admission-preferences/count");
         public static final String CREATE = build("/admission-preferences");
         public static final String CREATE_BULK = build("/admission-preferences/bulk");
 
@@ -322,5 +325,13 @@ public final class URLUtil {
 
         public static final String AUTH_TOKEN = "authToken";
         public static final String USER_NAME = "userName";
+    }
+
+    // ===================== CALCULATIONS =====================
+    public static final class CALCULATION {
+        private CALCULATION() {
+        }
+
+        public static final String RECALCULATE_ALL_APPLICANTS = build("/calculations/applicants/recalculate-all");
     }
 }

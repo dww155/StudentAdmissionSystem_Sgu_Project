@@ -25,7 +25,7 @@ public class MajorSubjectGroup {
     @JoinColumn(name = "manganh", referencedColumnName = "manganh", nullable = false)
     Major major;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "matohop", referencedColumnName = "matohop", nullable = false)
     SubjectCombination subjectCombination;
 

@@ -135,6 +135,10 @@ public class ApplicantService {
                 .toList();
     }
 
+    public long getApplicantCount() {
+        return applicantRepository.count();
+    }
+
     public Page<ApplicantResponse> getApplicantsPaginated(Pageable pageable) {
         return applicantRepository.findAll(pageable)
                 .map(applicantMapper::toApplicantResponse);

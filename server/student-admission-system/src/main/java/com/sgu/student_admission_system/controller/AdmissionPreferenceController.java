@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admission-preferences")
@@ -52,6 +53,12 @@ public class AdmissionPreferenceController {
     public ApiResponse<List<AdmissionPreferenceResponse>> getAllAdmissionPreferences() {
         List<AdmissionPreferenceResponse> response = admissionPreferenceService.getAllAdmissionPreferences();
         return new ApiResponse<>(response, "Get all admission preferences successfully");
+    }
+
+    @GetMapping("/count")
+    public ApiResponse<Map<String, Long>> getAdmissionPreferenceCount() {
+        long count = admissionPreferenceService.getAdmissionPreferenceCount();
+        return new ApiResponse<>(Map.of("count", count), "Get admission preference count successfully");
     }
 
     @GetMapping("/paginated")

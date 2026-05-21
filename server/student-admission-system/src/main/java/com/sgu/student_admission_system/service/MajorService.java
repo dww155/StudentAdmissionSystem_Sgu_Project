@@ -102,6 +102,10 @@ public class MajorService {
                 .toList();
     }
 
+    public long getMajorCount() {
+        return majorRepository.count();
+    }
+
     @Transactional
     public MajorResponse updateMajor(Integer id, MajorUpdateRequest request) {
         Major major = majorRepository.findById(id)

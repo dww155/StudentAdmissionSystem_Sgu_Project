@@ -22,6 +22,15 @@ public class ApplicantService extends BaseApiService {
         );
     }
 
+    public ApiResponse<Map<String, Long>> count() {
+        return get(
+                URLUtil.APPLICANT.COUNT,
+                true,
+                new TypeReference<ApiResponse<Map<String, Long>>>() {
+                }
+        );
+    }
+
     public ApiResponse<Map<String, Object>> getPaginated(int page, int size, String sortBy, String sortDir) {
         return get(
                 URLUtil.APPLICANT.GET_PAGINATED(page, size, sortBy, sortDir),
@@ -84,6 +93,16 @@ public class ApplicantService extends BaseApiService {
                 URLUtil.APPLICANT.DELETE(id),
                 true,
                 new TypeReference<ApiResponse<Void>>() {
+                }
+        );
+    }
+
+    public ApiResponse<Map<String, Integer>> recalculateAll() {
+        return post(
+                URLUtil.CALCULATION.RECALCULATE_ALL_APPLICANTS,
+                Map.of(),
+                true,
+                new TypeReference<ApiResponse<Map<String, Integer>>>() {
                 }
         );
     }

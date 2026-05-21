@@ -9,6 +9,7 @@ import com.sgu.admission_desktop.dto.Major.MajorUpdateRequest;
 import com.sgu.admission_desktop.util.URLUtil;
 
 import java.util.List;
+import java.util.Map;
 
 public class MajorService extends BaseApiService {
 
@@ -17,6 +18,15 @@ public class MajorService extends BaseApiService {
                 URLUtil.MAJOR.GET_ALL,
                 true,
                 new TypeReference<ApiResponse<List<MajorResponse>>>() {
+                }
+        );
+    }
+
+    public ApiResponse<Map<String, Long>> count() {
+        return get(
+                URLUtil.MAJOR.COUNT,
+                true,
+                new TypeReference<ApiResponse<Map<String, Long>>>() {
                 }
         );
     }

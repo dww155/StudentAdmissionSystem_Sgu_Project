@@ -113,6 +113,10 @@ public class AdmissionPreferenceService {
                 .toList();
     }
 
+    public long getAdmissionPreferenceCount() {
+        return admissionPreferenceRepository.count();
+    }
+
     public Page<AdmissionPreferenceResponse> getAdmissionPreferencesPaginated(Pageable pageable) {
         return admissionPreferenceRepository.findAll(pageable)
                 .map(admissionPreferenceMapper::toAdmissionPreferenceResponse);
