@@ -22,4 +22,6 @@ public interface AdmissionPreferenceRepository extends JpaRepository<AdmissionPr
     List<Object[]> countByMajorIds(@Param("majorIds") Collection<Integer> majorIds);
 
     long countByMajor_Id(Integer majorId);
+
+    List<AdmissionPreference> findAllByApplicant_Cccd(String cccd);
 }

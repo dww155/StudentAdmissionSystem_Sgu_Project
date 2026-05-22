@@ -1,5 +1,7 @@
 package com.sgu.admission_desktop.controller;
 
+import com.sgu.admission_desktop.dto.user.ChangePasswordRequest;
+import com.sgu.admission_desktop.service.AuthService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -27,6 +29,8 @@ public class AdminChangePasswordController {
 
     @FXML
     private void onUpdate() {
+        AuthService authService = new AuthService();
+
         String current = safeTrim(currentPasswordField);
         String next = safeTrim(newPasswordField);
         String confirm = safeTrim(confirmPasswordField);
@@ -46,8 +50,16 @@ public class AdminChangePasswordController {
             return;
         }
 
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .oldPassword(current)
+                .newPassword(next)
+                .confirmPassword(confirm)
+                .build();
+
+        authService.changePassword(request);
+
         // Demo-only: dự án hiện chưa có entity người dùng/admin để cập nhật DB.
-        showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã đổi mật khẩu admin (demo).");
+        showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã đổi mật khẩu admin.");
         clearFields();
     }
 

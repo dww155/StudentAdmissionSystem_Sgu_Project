@@ -153,10 +153,13 @@ public class CalculationService {
                 BigDecimal subjectGroupBonus = BigDecimal.ZERO;
                 BigDecimal weightedRawScore = BigDecimal.ZERO;
                 boolean hasSubjectBonusApplied = false;
-                
+
+                int sumWeights = 0;
                 for (int i = 0; i < subjects.size(); i++) {
                     String subject = normalizeSubject(subjects.get(i));
                     int weight = weights.get(i) == null ? 1 : weights.get(i);
+
+                    sumWeights += weight;
 
                     BigDecimal subjectScore = resolveSubjectScore(subject, examScoresBySubject, bestVsatConvertedBySubject, examScore, englishCertification, majorSubjectGroup);
 
@@ -170,6 +173,11 @@ public class CalculationService {
 //                    System.out.println("\t " + " | SUBJECT: " + subject + " | SCORE: " + subjectScore);
                     weightedRawScore = weightedRawScore.add(subjectScore.multiply(BigDecimal.valueOf(weight)));
                 }
+
+                weightedRawScore = weightedRawScore
+                        .divide(BigDecimal.valueOf(sumWeights), 2, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(3));
+
                 if (!hasSubjectBonusApplied) {
                     subjectGroupBonus = resolveSubjectGroupBonus(priorityBonusPoint);
                 }
@@ -191,16 +199,22 @@ public class CalculationService {
             preference.setSubjectGroup(bestSubjectGroup);
             preference.setMethod(examScore.getMethod());
 
+            if (preference.getAdmissionScore().compareTo(major.getAdmissionScore()) > 0)
+                preference.setResult("Đỗ");
+            else
+                preference.setResult("Trượt");
+                ;
+
             // print all information
-            System.out.println("===== BEST SUBJECT GROUP RESULT =====");
-            System.out.println("APPLICANT_ID: " + applicant.getId());
-            System.out.println("PREFERENCE_ID: " + preference.getId());
-            System.out.println("PRIORITY_ORDER: " + preference.getPriorityOrder());
-            System.out.println("BEST_SUBJECT_GROUP: " + preference.getSubjectGroup());
-            System.out.println("METHOD: " + preference.getMethod());
-            System.out.println("EXAM_SCORE: " + preference.getExamScore());
-            System.out.println("BONUS_SCORE: " + preference.getBonusScore());
-            System.out.println("ADMISSION_SCORE: " + preference.getAdmissionScore());
+//            System.out.println("===== BEST SUBJECT GROUP RESULT =====");
+//            System.out.println("APPLICANT_ID: " + applicant.getId());
+//            System.out.println("PREFERENCE_ID: " + preference.getId());
+//            System.out.println("PRIORITY_ORDER: " + preference.getPriorityOrder());
+//            System.out.println("BEST_SUBJECT_GROUP: " + preference.getSubjectGroup());
+//            System.out.println("METHOD: " + preference.getMethod());
+//            System.out.println("EXAM_SCORE: " + preference.getExamScore());
+//            System.out.println("BONUS_SCORE: " + preference.getBonusScore());
+//            System.out.println("ADMISSION_SCORE: " + preference.getAdmissionScore());
 
 //            for (Map.Entry<String, BigDecimal> entry : bestSubjectScores.entrySet()) {
 //                System.out.println("BEST_GROUP_SUBJECT_SCORE_" + entry.getKey() + ": " + entry.getValue());

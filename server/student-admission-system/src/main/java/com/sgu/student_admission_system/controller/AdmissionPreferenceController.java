@@ -49,6 +49,13 @@ public class AdmissionPreferenceController {
         return new ApiResponse<>(response, "Get admission preference successfully");
     }
 
+    @GetMapping("/cccd={cccd}")
+    public ApiResponse<List<AdmissionPreferenceResponse>> getAdmissionPreferenceByCccd(@PathVariable("cccd") String cccd) {
+        List<AdmissionPreferenceResponse> response = admissionPreferenceService.getAdmissionPreferencesByCccd(cccd);
+        return new ApiResponse<>(response, "Get admission preference successfully");
+    }
+
+
     @GetMapping
     public ApiResponse<List<AdmissionPreferenceResponse>> getAllAdmissionPreferences() {
         List<AdmissionPreferenceResponse> response = admissionPreferenceService.getAllAdmissionPreferences();

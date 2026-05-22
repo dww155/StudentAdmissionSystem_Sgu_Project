@@ -72,10 +72,10 @@ public class AuthenticationService {
         String newPassword = request.getNewPassword();
         String confirmPassword = request.getConfirmPassword();
 
-        if (newPassword.equals(confirmPassword))
+        if (!newPassword.equals(confirmPassword))
             throw new AppException(ErrorCode.BAD_REQUEST);
 
-        if (passwordEncoder.matches(oldPassword, admin.getPassword()))
+        if (!passwordEncoder.matches(oldPassword, admin.getPassword()))
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
         admin.setPassword(passwordEncoder.encode(newPassword));
