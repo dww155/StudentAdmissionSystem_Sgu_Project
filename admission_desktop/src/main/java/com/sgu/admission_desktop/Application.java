@@ -15,7 +15,7 @@ public class Application extends javafx.application.Application {
     public void start(Stage stage) {
         primaryStage = stage;
         primaryStage.setTitle("SGU Admission Desktop");
-        showMainLayout();
+        showLoginLayout();
     }
 
     public static void main(String[] args) {
@@ -24,7 +24,7 @@ public class Application extends javafx.application.Application {
 
     public static void showLoginLayout() {
         ApiClient.clearToken();
-        setScene("fxml/layouts/login-layout.fxml", 1600, 900);
+        setScene("fxml/layouts/login-layout.fxml", 600, 400);
     }
 
     public static void showMainLayout() {

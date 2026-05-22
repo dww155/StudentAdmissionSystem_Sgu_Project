@@ -1,6 +1,5 @@
-package com.sgu.student_admission_system.dto.user;
+package com.sgu.admission_desktop.dto.user;
 
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;

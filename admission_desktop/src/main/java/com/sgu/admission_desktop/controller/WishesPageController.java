@@ -125,17 +125,17 @@ public class WishesPageController implements Initializable {
 
         try {
             majorNameByCode = loadMajorNames();
-            ApiResponse<List<AdmissionPreferenceResponse>> response = admissionPreferenceService.getAll();
+            ApiResponse<List<AdmissionPreferenceResponse>> response = admissionPreferenceService.getByCccd(cccd);
             List<AdmissionPreferenceResponse> wishes = response.getData() == null ? List.of() : response.getData();
 
-            List<AdmissionPreferenceResponse> filtered = wishes.stream()
-                    .filter(wish -> cccd.equals(ControllerSupport.safeString(ControllerSupport.toMap(wish).get("cccd"))))
-                    .toList();
+//            List<AdmissionPreferenceResponse> filtered = wishes.stream()
+//                    .filter(wish -> cccd.equals(ControllerSupport.safeString(ControllerSupport.toMap(wish).get("cccd"))))
+//                    .toList();
 
-            items.setAll(filtered.stream().map(this::toRow).toList());
+            items.setAll(wishes.stream().map(this::toRow).toList());
             currentPage = 0;
             totalPages = 1;
-            totalElements = filtered.size();
+            totalElements = wishes.size();
             updatePaginationControls();
         } catch (Exception e) {
             ControllerSupport.showError("Search wishes by CCCD failed", ControllerSupport.extractMessage(e));

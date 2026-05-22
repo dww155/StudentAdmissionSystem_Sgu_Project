@@ -22,6 +22,15 @@ public class AdmissionPreferenceService extends BaseApiService {
         );
     }
 
+    public ApiResponse<List<AdmissionPreferenceResponse>> getByCccd(String cccd) {
+        return get(
+                URLUtil.ADMISSION_PREFERENCE.GET_BY_CCCD("cccd=" + cccd),
+                true,
+                new TypeReference<ApiResponse<List<AdmissionPreferenceResponse>>>() {
+                }
+        );
+    }
+
     public ApiResponse<Map<String, Long>> count() {
         return get(
                 URLUtil.ADMISSION_PREFERENCE.COUNT,

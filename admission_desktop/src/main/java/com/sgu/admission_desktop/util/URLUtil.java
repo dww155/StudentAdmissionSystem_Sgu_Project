@@ -233,6 +233,9 @@ public final class URLUtil {
         }
 
         public static final String GET_ALL = build("/admission-preferences");
+        public static final String GET_BY_CCCD (String cccd) {
+            return build("/admission-preferences/" + cccd);
+        };
         public static final String COUNT = build("/admission-preferences/count");
         public static final String CREATE = build("/admission-preferences");
         public static final String CREATE_BULK = build("/admission-preferences/bulk");

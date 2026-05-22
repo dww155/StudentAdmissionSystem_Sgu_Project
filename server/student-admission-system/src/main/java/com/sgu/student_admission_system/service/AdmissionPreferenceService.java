@@ -5,12 +5,14 @@ import com.sgu.student_admission_system.dto.AdmissionPreference.AdmissionPrefere
 import com.sgu.student_admission_system.dto.AdmissionPreference.ListAdmissionPreferenceCreationRequest;
 import com.sgu.student_admission_system.dto.AdmissionPreference.AdmissionPreferenceResponse;
 import com.sgu.student_admission_system.dto.AdmissionPreference.AdmissionPreferenceUpdateRequest;
+import com.sgu.student_admission_system.dto.Applicant.ApplicantResponse;
 import com.sgu.student_admission_system.entity.AdmissionPreference;
 import com.sgu.student_admission_system.entity.Applicant;
 import com.sgu.student_admission_system.entity.Major;
 import com.sgu.student_admission_system.exception.AppException;
 import com.sgu.student_admission_system.exception.ErrorCode;
 import com.sgu.student_admission_system.mapper.AdmissionPreferenceMapper;
+import com.sgu.student_admission_system.mapper.ApplicantMapper;
 import com.sgu.student_admission_system.repository.AdmissionPreferenceRepository;
 import com.sgu.student_admission_system.repository.ApplicantRepository;
 import com.sgu.student_admission_system.repository.MajorRepository;
@@ -150,6 +152,12 @@ public class AdmissionPreferenceService {
     private Applicant getApplicantByCccd(String cccd) {
         return applicantRepository.findByCccd(cccd)
                 .orElseThrow(() -> new AppException(ErrorCode.APPLICANT_NOT_FOUND));
+    }
+
+    public List<AdmissionPreferenceResponse> getAdmissionPreferencesByCccd(String cccd) {
+        List<AdmissionPreference> admissionPreferences = admissionPreferenceRepository.findAllByApplicant_Cccd(cccd);
+
+        return admissionPreferences.stream().map(admissionPreferenceMapper::toAdmissionPreferenceResponse).toList();
     }
 
     private Major getMajorByCode(String majorCode) {
